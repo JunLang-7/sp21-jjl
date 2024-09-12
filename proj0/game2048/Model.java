@@ -115,8 +115,9 @@ public class Model extends Observable {
         // changed local variable to true.
          board.setViewingPerspective(side);
 
-        // if merged, update the score
+        // a two-dimension array to record if the tile is merged
         boolean[][] merged = new boolean[board.size()][board.size()];
+
         for (int r = 2; r >= 0; r--){
             for (int c = 0; c < board.size(); c++) {
                 Tile t = tile(c, r);
@@ -144,9 +145,10 @@ public class Model extends Observable {
                         changed = true;
                     }
 
+                    // check if merged and update the status and score
                     if (board.move(c, dr, t)){
                         merged[c][dr] = true;
-                        score +=board.tile(c, dr).value();
+                        score += board.tile(c, dr).value();
                     }
 
                 }
