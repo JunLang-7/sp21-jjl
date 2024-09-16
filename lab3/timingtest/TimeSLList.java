@@ -27,10 +27,9 @@ public class TimeSLList {
         AList<Integer> Ns = new AList<>();
         AList<Double> times = new AList<>();
         AList<Integer> opCounts = new AList<>();
-        int ops = 0, trick = 0;
+        int ops = 10000, trick = 0;
         for (int i = 0; i < 128000; i++){
             list.addLast(i);
-            ops++;
             if (list.size() == Math.pow(2, trick) * 1000){
                 Stopwatch stopwatch = new Stopwatch();
                 for (int j = 0; j < ops; j++) {
