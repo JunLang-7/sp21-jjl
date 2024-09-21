@@ -1,5 +1,7 @@
 package deque;
 
+import java.util.Iterator;
+
 /*
  * add and remove operations must not involve any looping or recursion.
  *  A single such operation must take “constant time”,
@@ -8,7 +10,7 @@ package deque;
  * get must use iteration, not recursion.
  * size must take constant time.
  */
-public class LinkedListDeque<T> implements Deque<T> {
+public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
     private class Node{
         private Node next;
         private Node prev;
@@ -115,7 +117,6 @@ public class LinkedListDeque<T> implements Deque<T> {
      * until it reaches the index or reaches the end
      * @param index
      * @param p
-     * @return
      */
     private T getRecursiveHelper(int index, Node p){
         if (p == sentinel) {
@@ -125,5 +126,50 @@ public class LinkedListDeque<T> implements Deque<T> {
             return p.item;
         }
         return getRecursiveHelper(index - 1, p.next);
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return new LinkedListIterator();
+    }
+
+    private class LinkedListIterator implements Iterator<T>{
+        private Node current;
+
+        public LinkedListIterator(){
+            current = sentinel.next;
+        }
+
+        public boolean hasNext(){
+            return current != sentinel;
+        }
+
+        public T next(){
+            current = current.next;
+            return current.item;
+        }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null){
+            return false;
+        }
+        if (obj == this){
+            return true;
+        }
+        if (!(obj instanceof LinkedListDeque)) {
+            return false;
+        }
+        LinkedListDeque other = (LinkedListDeque) obj;
+        if (size != other.size) {
+            return false;
+        }
+        for (int i = 0; i < size; i++) {
+            if (this.get(i) != other.get(i)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

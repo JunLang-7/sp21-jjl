@@ -1,11 +1,13 @@
 package deque;
 
+import java.util.Iterator;
+
 /*
  * add and remove must take constant time, except during resizing operations.
  * get and size must take constant time.
  * The starting size of your array should be 8.
  */
-public class ArrayDeque<T> implements Deque<T> {
+public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     private T[] array;
     private int size;
     private int nextFirst;
@@ -123,5 +125,50 @@ public class ArrayDeque<T> implements Deque<T> {
             // If Ratio Usage < 0.25 and size is larger than 10, half array deque length.
             resize(array.length / 2);
         }
+    }
+
+    public Iterator<T> iterator() {
+        return new ArrayDequeIterator();
+    }
+
+    private class ArrayDequeIterator implements Iterator<T> {
+        private int nextIndex;
+
+        public ArrayDequeIterator() {
+            nextIndex = 0;
+        }
+
+        public boolean hasNext() {
+            return nextIndex < size;
+        }
+
+        public T next() {
+            T item = get(nextIndex);
+            nextIndex++;
+            return item;
+        }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof ArrayDeque)) {
+            return false;
+        }
+        ArrayDeque other = (ArrayDeque) obj;
+        if (size != other.size) {
+            return false;
+        }
+        for (int i = 0; i < size; i++) {
+            if (get(i) != other.get(i)) {
+                return false;
+            }
+        }
+        return true;
     }
 }
