@@ -20,7 +20,7 @@ public class MaxArrayDeque<T> extends ArrayDeque<T> {
      * which just returns the max element
      * @return
      */
-    public T max(){
+    public T max() {
         return max(comparator);
     }
 
@@ -30,7 +30,7 @@ public class MaxArrayDeque<T> extends ArrayDeque<T> {
      * @return
      */
     public T max(Comparator<T> cmp) {
-        if (isEmpty()){
+        if (isEmpty()) {
             return null;
         }
         int maxIndex = 0;

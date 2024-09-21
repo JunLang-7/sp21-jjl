@@ -42,8 +42,8 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     }
 
     @Override
-    public void printDeque(){
-        for (T ele : this){
+    public void printDeque() {
+        for (T ele : this) {
             System.out.println(ele + " ");
         }
     }
@@ -63,7 +63,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
 
     @Override
     public T removeLast() {
-        if (isEmpty()){
+        if (isEmpty()) {
             return null;
         }
 
@@ -127,7 +127,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     private class ArrayDequeIterator implements Iterator<T> {
         private int nextIndex;
 
-        public ArrayDequeIterator() {
+        ArrayDequeIterator() {
             nextIndex = 0;
         }
 

@@ -21,7 +21,7 @@ public class GuitarHero {
             if (StdDraw.hasNextKeyTyped()) {
                 char key = StdDraw.nextKeyTyped();
                 int keyIndex = KEYBOARD.indexOf(key);
-                if (keyIndex >= 0){
+                if (keyIndex >= 0) {
                     guitarStrings[keyIndex].pluck();
                 }
             }
