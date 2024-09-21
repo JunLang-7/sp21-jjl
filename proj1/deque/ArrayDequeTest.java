@@ -150,4 +150,69 @@ public class ArrayDequeTest {
             }
         }
     }
+
+    @Test
+    public void iteratorTest(){
+        ArrayDeque<Integer> arr = new ArrayDeque<>();
+
+        for (int i = 0; i < 100; i++){
+            arr.addLast(i);
+        }
+
+        int count = 0;
+
+        for (int ele : arr){
+            assertEquals(count, ele);
+            count++;
+        }
+    }
+
+    @Test
+    public void equalsTest1(){
+        ArrayDeque<Integer> arr1 = new ArrayDeque<>();
+        ArrayDeque<Integer> arr2 = new ArrayDeque<>();
+
+        for (int i = 0; i < 100; i++){
+            arr1.addLast(i);
+            arr2.addLast(i);
+        }
+
+        assertTrue(arr1.equals(arr2));
+    }
+
+    @Test
+    public void equalsTest2(){
+        ArrayDeque<Integer> arr1 = new ArrayDeque<>();
+        ArrayDeque<Integer> arr2 = arr1;
+
+        assertTrue(arr1.equals(arr2));
+
+        for (int i = 0; i < 100; i++){
+            arr1.addLast(i);
+        }
+
+        assertTrue(arr1.equals(arr2));
+    }
+
+    @Test
+    public void equalsTest3(){
+        ArrayDeque<Integer> arr1 = new ArrayDeque<>();
+        ArrayDeque<Integer> arr2 = new ArrayDeque<>();
+        arr1.addFirst(1);
+        for (int i = 0; i < 100; i++){
+            arr1.addLast(i);
+            arr2.addLast(i);
+        }
+        assertFalse(arr1.equals(arr2));
+    }
+
+    @Test
+    public void equalsTest4(){
+        ArrayDeque<Integer> arr1 = new ArrayDeque<>();
+        ArrayDeque<Integer> arr2 = null;
+        for (int i = 0; i < 100; i++){
+            arr1.addLast(i);
+        }
+        assertFalse(arr1.equals(arr2));
+    }
 }

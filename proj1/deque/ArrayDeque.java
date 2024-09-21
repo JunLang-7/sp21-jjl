@@ -20,6 +20,14 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         nextLast = 5;
     }
 
+    public ArrayDeque(T item) {
+        array = (T[]) new Object[8];
+        size = 1;
+        array[4] = item;
+        nextFirst = 3;
+        nextLast = 5;
+    }
+
     @Override
     public void addFirst(T item) {
         array[nextFirst] = item;
@@ -48,10 +56,8 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
 
     @Override
     public void printDeque(){
-        int pos = (nextFirst + 1) % array.length;
-        while (pos != nextLast) {
-            System.out.print(array[pos] + " ");
-            pos = (pos + 1) % array.length;
+        for (T ele : this){
+            System.out.println(ele + " ");
         }
     }
 

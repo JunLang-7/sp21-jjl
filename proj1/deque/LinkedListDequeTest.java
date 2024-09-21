@@ -155,4 +155,64 @@ public class LinkedListDequeTest {
         assertEquals(null, lld1.get(10001));
         assertEquals(null, lld2.getRecursive(10001));
     }
+
+    @Test
+    public void iteratorTest(){
+        LinkedListDeque<Integer> lld1 = new LinkedListDeque<>();
+        for (int i = 0; i < 100; i++) {
+            lld1.addLast(i);
+        }
+
+        int count = 0;
+        for (int ele : lld1) {
+            assertEquals(count, ele);
+            count++;
+        }
+    }
+
+    @Test
+    public void equalsTest1(){
+        LinkedListDeque<Integer> lld1 = new LinkedListDeque<>();
+        LinkedListDeque<Integer> lld2 = new LinkedListDeque<>();
+
+        for (int i = 0; i < 100; i++) {
+            lld1.addLast(i);
+            lld2.addLast(i);
+        }
+
+        assertTrue(lld1.equals(lld2));
+
+    }
+
+    @Test
+    public void equalsTest2(){
+        LinkedListDeque<Integer> lld1 = new LinkedListDeque<>();
+        LinkedListDeque<Integer> lld2 = new LinkedListDeque<>();
+
+        lld1.addLast(1);
+        for (int i = 0; i < 100; i++) {
+            lld1.addLast(i);
+            lld2.addLast(i);
+        }
+        assertFalse(lld1.equals(lld2));
+    }
+
+    @Test
+    public void equalsTest3(){
+        LinkedListDeque<Integer> lld1 = new LinkedListDeque<>();
+        LinkedListDeque<Integer> lld2 = null;
+
+        assertFalse(lld1.equals(lld2));
+    }
+
+    @Test
+    public void equalsTest4(){
+        LinkedListDeque<Integer> lld1 = new LinkedListDeque<>();
+        LinkedListDeque<Integer> lld2 = lld1;
+        assertTrue(lld1.equals(lld2));
+        for (int i = 0; i < 100; i++) {
+            lld1.addLast(i);
+        }
+        assertTrue(lld1.equals(lld2));
+    }
 }
