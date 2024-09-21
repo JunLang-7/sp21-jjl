@@ -23,7 +23,7 @@ public class MaxArrayDequeTest {
 
     @Test
     public void doubleMaxArrayDequeTest() {
-        Comparator<Double> cmpDouble = MaxArrayDeque.getDoubleComparator();
+        Comparator<Double> cmpDouble = getDoubleComparator();
         MaxArrayDeque<Double> doubleMAD = new MaxArrayDeque<>(cmpDouble);
         for (int i = 0; i <= 100; i++){
             doubleMAD.addFirst(i / 2.0);
@@ -36,7 +36,7 @@ public class MaxArrayDequeTest {
 
     @Test
     public void longMaxArrayDequeTest() {
-        Comparator<Long> cmpLong = MaxArrayDeque.getLongComparator();
+        Comparator<Long> cmpLong = getLongComparator();
         MaxArrayDeque<Long> longMAD = new MaxArrayDeque<>(cmpLong);
         for (long i = 1000000; i <= 10000000; i++){
             longMAD.addLast(i);
@@ -46,7 +46,7 @@ public class MaxArrayDequeTest {
 
     @Test
     public void stringMaxArrayDequeTest() {
-        Comparator<String> cmpString = MaxArrayDeque.getStringComparator();
+        Comparator<String> cmpString = getStringComparator();
         MaxArrayDeque<String> stringMaxArrayDeque = new MaxArrayDeque<>(cmpString);
         for (char i = 'a'; i <= 'z'; i++){
             stringMaxArrayDeque.addLast(String.valueOf(i));
@@ -56,12 +56,67 @@ public class MaxArrayDequeTest {
 
     @Test
     public void MaxArrayDequeTestWithComparator() {
-        Comparator<Integer> cmpInt = MaxArrayDeque.getIntComparator();
-        Comparator<Integer> cmpIntAbs = MaxArrayDeque.getAbsIntComparator();
+        Comparator<Integer> cmpInt = getIntComparator();
+        Comparator<Integer> cmpIntAbs = getAbsIntComparator();
         MaxArrayDeque<Integer> intMAD = new MaxArrayDeque<>(cmpInt);
         for (int i = 0; i < 100; i++){
             intMAD.addLast(i * (int) Math.pow(-1, i));
         }
         assertEquals(-99, (int)intMAD.max(cmpIntAbs));
+    }
+
+    private static class IntComparator implements Comparator<Integer>{
+        @Override
+        public int compare(Integer o1, Integer o2) {
+            return o1 - o2;
+        }
+    }
+
+    public static Comparator<Integer> getIntComparator(){
+        return new IntComparator();
+    }
+
+    private static class AbsIntComparator implements Comparator<Integer>{
+        @Override
+        public int compare(Integer o1, Integer o2) {
+            return Math.abs(o1 - o2);
+        }
+    }
+
+    public static Comparator<Integer> getAbsIntComparator(){
+        return new AbsIntComparator();
+    }
+
+    private static class DoubleComparator implements Comparator<Double>{
+        @Override
+        public int compare(Double o1, Double o2) {
+            return o1.compareTo(o2);
+        }
+    }
+
+    public static Comparator<Double> getDoubleComparator(){
+        return new DoubleComparator();
+    }
+
+    private static class LongComparator implements Comparator<Long>{
+        @Override
+        public int compare(Long o1, Long o2) {
+            return o1.compareTo(o2);
+        }
+    }
+
+    public static Comparator<Long> getLongComparator(){
+        return new LongComparator();
+    }
+
+    private static class StringComparator implements Comparator<String> {
+        @Override
+        public int compare(String o1, String o2) {
+            return o1.compareTo(o2);
+        }
+    }
+
+    public static Comparator<String> getStringComparator(){
+        return new StringComparator();
     }
 }

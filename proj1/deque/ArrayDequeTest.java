@@ -14,8 +14,8 @@ public class ArrayDequeTest {
         arrayDeque.addLast(4);
 
         assertEquals(4, arrayDeque.size());
-        assertEquals(4, (int)arrayDeque.getLast());
-        assertEquals(1, (int)arrayDeque.getFirst());
+        assertEquals(1, (int)arrayDeque.get(0));
+        assertEquals(4, (int)arrayDeque.get(arrayDeque.size() - 1));
         assertEquals(3, (int)arrayDeque.get(2));
         assertEquals(1, (int)arrayDeque.removeFirst());
         assertEquals(4, (int)arrayDeque.removeLast());

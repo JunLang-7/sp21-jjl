@@ -20,14 +20,6 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         nextLast = 5;
     }
 
-    public ArrayDeque(T item) {
-        array = (T[]) new Object[8];
-        size = 1;
-        array[4] = item;
-        nextFirst = 3;
-        nextLast = 5;
-    }
-
     @Override
     public void addFirst(T item) {
         array[nextFirst] = item;
@@ -42,11 +34,6 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         nextLast++;
         size++;
         usageDealer();
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return size == 0;
     }
 
     @Override
@@ -87,11 +74,11 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         return item;
     }
 
-    public T getFirst() {
+    private T getFirst() {
         return array[nextFirst + 1];
     }
 
-    public T getLast() {
+    private T getLast() {
         return array[nextLast - 1];
     }
 
