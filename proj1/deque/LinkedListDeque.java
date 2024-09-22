@@ -11,7 +11,7 @@ import java.util.Iterator;
  * size must take constant time.
  */
 public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
-    private class Node{
+    private class Node {
         private Node next;
         private Node prev;
         private T item;
@@ -21,7 +21,7 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
          * @param i the item of Node
          * @param n the next of Node
          */
-        public Node(T i, Node n) {
+        Node(T i, Node n) {
             item = i;
             next = n;
         }
@@ -62,14 +62,14 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
     @Override
     public void printDeque() {
         Node p = sentinel.next;
-        while (p.next != sentinel){
+        while (p.next != sentinel) {
             System.out.print(p.item + " ");
             p = p.next;
         }
     }
 
     public T removeFirst() {
-        if (size == 0){
+        if (size == 0) {
             return null;
         }
         T item = sentinel.next.item;
@@ -81,7 +81,7 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
     }
 
     public T removeLast() {
-        if (size == 0){
+        if (size == 0) {
             return null;
         }
         T item = sentinel.prev.item;
@@ -122,7 +122,7 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
         if (p == sentinel) {
             return null;
         }
-        if (index == 0){
+        if (index == 0) {
             return p.item;
         }
         return getRecursiveHelper(index - 1, p.next);
