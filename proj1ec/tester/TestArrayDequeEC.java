@@ -25,7 +25,7 @@ public class TestArrayDequeEC {
                 sol.addLast(i);
                 msg += "addLast(" + i + ")\n";
                 assertEquals(msg, sol.get(sol.size() - 1), sd.get(sd.size() - 1));
-            }else if (operator == 2) {
+            }else if (operator == 2 && !sd.isEmpty() && !sol.isEmpty()) {
                 if (sd.isEmpty() || sol.isEmpty()) {
                     return;
                 }
@@ -33,10 +33,7 @@ public class TestArrayDequeEC {
                 Integer solValue = sol.removeFirst();
                 msg += "removeFirst()\n";
                 assertEquals(msg, sdValue, solValue);
-            }else if (operator == 3) {
-                if (sd.isEmpty() || sol.isEmpty()) {
-                    return;
-                }
+            }else if (operator == 3 && !sd.isEmpty() && !sol.isEmpty()) {
                 Integer sdValue = sd.removeLast();
                 Integer solValue = sol.removeLast();
                 msg += "removeLast()\n";
