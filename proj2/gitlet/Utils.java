@@ -236,4 +236,14 @@ class Utils {
         System.out.printf(msg, args);
         System.out.println();
     }
+
+    static void createNewFile(File file) {
+        if (!file.exists()) {
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 }
