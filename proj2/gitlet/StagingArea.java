@@ -13,7 +13,7 @@ import static gitlet.Utils.*;
   */
 public class StagingArea implements Serializable {
     /** The Map contains the filePath as key and the Blob UID as value. */
-    private Map<String, String> pathToBlobs;
+    private final Map<String, String> pathToBlobs;
 
     /** The stagingArea name, including the addition and the removal. */
     private final String stageName;
@@ -25,7 +25,7 @@ public class StagingArea implements Serializable {
 
     /**
      * add the Blob to the additionArea.
-     * @param blob
+     * @param blob blob to add
      */
     public void addBlob(Blob blob) {
         String filePath = blob.getFilePath();
@@ -36,8 +36,8 @@ public class StagingArea implements Serializable {
 
     /**
      * add the Blob to the additionArea
-     * @param filePath
-     * @param blobUID
+     * @param filePath the file path
+     * @param blobUID the UID of the blob
      */
     public void addBlob(String filePath, String blobUID) {
         pathToBlobs.put(filePath, blobUID);
@@ -46,7 +46,7 @@ public class StagingArea implements Serializable {
 
     /**
      * remove the Blob from the removalArea
-     * @param filePath
+     * @param filePath the file path
      */
     public void removeBlob(String filePath) {
         pathToBlobs.remove(filePath);
@@ -55,7 +55,7 @@ public class StagingArea implements Serializable {
 
     /**
      * Return the Map of Blobs
-     * @return
+     * @return the Map of Blobs
      */
     public Map<String, String> getPathToBlobs() {
         return pathToBlobs;
@@ -87,15 +87,15 @@ public class StagingArea implements Serializable {
      */
     public void print() {
         for (String filePath: pathToBlobs.keySet()) {
-            File file = new File(filePath);
+            File file = join(filePath);
             System.out.println(file.getName());
         }
     }
 
     /**
      * Judge if the file is in the Map.
-     * @param filePath
-     * @return
+     * @param filePath the file path
+     * @return if the file is in the Blob Map
      */
     public Boolean containsFile(String filePath) {
         return this.pathToBlobs.containsKey(filePath);

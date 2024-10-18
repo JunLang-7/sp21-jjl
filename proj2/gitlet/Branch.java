@@ -4,12 +4,15 @@ import java.io.File;
 import java.io.Serializable;
 import static gitlet.Utils.*;
 
-
+/**
+ * Represents the branch of the repository,
+ * with the branch name and the commit pointer
+ */
 public class Branch implements Serializable {
     /** The branch Name */
-    private String branchName;
+    private final String branchName;
 
-    /** The UID of current Commit */
+    /** The UID of Commit that the branch points to */
     private String commitPointer;
 
     Branch(Commit commit) {
@@ -32,8 +35,8 @@ public class Branch implements Serializable {
     }
 
     /**
-     * Return the current Commit ID.
-     * @return
+     * Return the commit UID of the branch
+     * @return the commit UID of the branch
      */
     public String getCommitPointer() {
         return commitPointer;
@@ -41,7 +44,7 @@ public class Branch implements Serializable {
 
     /**
      * set the commitPointer the to Commit
-     * @param commit
+     * @param commit the Commit
      */
     public void setCommitPointer(Commit commit) {
         commitPointer = commit.getUID();

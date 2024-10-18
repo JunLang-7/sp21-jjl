@@ -10,19 +10,10 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 /** Represents a gitlet commit object.
- *  TODO: It's a good idea to give a description here of what else this Class
- *  does at a high level.
- *
+ *  with the attribution of message, time, parents and UID.
  *  @author Junlang Jiang
  */
 public class Commit implements Serializable {
-    /**
-     * TODO: add instance variables here.
-     *
-     * List all instance variables of the Commit class here with a useful
-     * comment above them describing what that variable represents and how that
-     * variable is used. We've provided one example for `message`.
-     */
 
     /** The message of this Commit. */
     private final String message;
@@ -40,7 +31,7 @@ public class Commit implements Serializable {
     private final Date date;
 
     /** The Map that store the path to blob, the same as StagingArea. */
-    private final Map<String, String> pathToBlobs;
+    private Map<String, String> pathToBlobs;
 
     /** The UID of blobs that stores in */
     private final List<String> blobs;
@@ -72,7 +63,7 @@ public class Commit implements Serializable {
      * @return the UID
      */
     private String createUID() {
-        return sha1(timestamp, message, parents.toString());
+        return sha1(timestamp, message, parents.toString(), blobs.toString());
     }
 
     /**
@@ -82,7 +73,7 @@ public class Commit implements Serializable {
      * @return timestamp
      */
     private String createTimestamp() {
-        DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss 'UTC', EEEE, dd MMMM yyyy", Locale.ENGLISH);
+        DateFormat dateFormat = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy Z", Locale.US);
         return dateFormat.format(date);
     }
 
@@ -96,7 +87,7 @@ public class Commit implements Serializable {
 
     /**
      * return the timestamp of this Commit.
-     * @return
+     * @return the timestamp in format
      */
     public String getTimestamp() {
         return timestamp;
@@ -104,35 +95,32 @@ public class Commit implements Serializable {
 
     /**
      * Return the UID of the Commit.
-     * @return
+     * @return the UID
      */
     public String getUID() {
         return UID;
     }
 
     /**
-     * Return the Date of the Commit.
-     * @return
+     * Get the Commit from file based on its commit UID
+     * @param commitUID the commit UID
+     * @return the Commit from file
      */
-    public Date getDate() {
-        return date;
-    }
-
-    public static Commit fromFile(String id) {
-        return readObject(join(Repository.COMMITS_DIR, id), Commit.class);
+    public static Commit fromFile(String commitUID) {
+        return readObject(join(Repository.COMMITS_DIR, commitUID), Commit.class);
     }
 
     /**
      * Get the parent list of the Commit.
-     * @return
+     * @return the list of the parents of the commit
      */
-    public List<String> getParent() {
+    public List<String> getParents() {
         return parents;
     }
 
     /**
      * Get the first parent of the Commit.
-     * @return
+     * @return the first parent of the commit
      */
     public String getFirstParent() {
         return parents.get(0);
@@ -149,7 +137,7 @@ public class Commit implements Serializable {
 
     /**
      * Return the pathToBlobs of the Commit.
-     * @return
+     * @return the Map of Blobs in the Commit
      */
     public Map<String, String> getPathToBlobs() {
         return pathToBlobs;
@@ -157,7 +145,7 @@ public class Commit implements Serializable {
 
     /**
      * Add another parent with the name.
-     * @param parent
+     * @param parent the parent commit UID of the commit
      */
     public void addParent(String parent) {
         parents.add(parent);
@@ -165,42 +153,31 @@ public class Commit implements Serializable {
 
     /**
      * Add the blob based on its path and UID to the Commit.
-     * @param blobPath
-     * @param blobUID
+     * @param blobPath the blob path
+     * @param blobUID the blob UID
      */
     public void addBlob(String blobPath, String blobUID) {
         pathToBlobs.put(blobPath, blobUID);
         blobs.add(blobPath);
     }
 
-    /**u
+    /**
      * Remove the blob of the filePath
-     * @param blobPath
+     * @param blobPath the blob path
      */
     public void removeBlob(String blobPath) {
         pathToBlobs.remove(blobPath);
         blobs.remove(pathToBlobs.get(blobPath));
     }
 
-    /**
-     * check if the file is modified or removed.
-     * @param fileName the file name
-     * @return return true if it's modified
-     */
-    public boolean checkUntracked(String fileName) {
-        File file = join(Repository.CWD, fileName);
-        // check if it's removed,
-        if (!file.exists()) {
-            return true;
+    public void checkPath() {
+        Map<String, String> newPathToBlobs = new HashMap<>();
+        for (String oldPath : pathToBlobs.keySet()) {
+            File oldFile = new File(oldPath);
+            String fileName = oldFile.getName();
+            File newFile = join(Repository.CWD, fileName);
+            newPathToBlobs.put(newFile.getPath(), pathToBlobs.get(oldPath));
         }
-        // check if it's modified.
-        String filePathCWD = file.getAbsolutePath();
-        Blob blobCWD = new Blob(file);
-        for (String filePath : pathToBlobs.keySet()) {
-            if (filePath.equals(filePathCWD)) {
-                return blobCWD.getUID().equals(pathToBlobs.get(filePath));
-            }
-        }
-        return false;
+        pathToBlobs = newPathToBlobs;
     }
 }

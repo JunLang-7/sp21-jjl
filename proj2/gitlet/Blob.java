@@ -15,7 +15,7 @@ public class Blob implements Serializable {
     private final String UID;
 
     /** The File that writes to the blob. */
-    private final File file;
+    private final File sourceFile;
 
     /** The Blob file that saves the Blob. */
     private final File blobFile;
@@ -24,8 +24,8 @@ public class Blob implements Serializable {
     private final byte[] content;
 
     public Blob(File sourceFile) {
-        this.file = sourceFile;
-        String filePath = file.getPath();
+        this.sourceFile = sourceFile;
+        String filePath = this.sourceFile.getPath();
         content = readContents(sourceFile);
         UID = sha1(filePath, content);
         blobFile = join(Repository.BLOBS_DIR, UID);
@@ -67,15 +67,15 @@ public class Blob implements Serializable {
 
     /**
      * Return the filePath of the Blob
-     * @return
+     * @return the file path
      */
     public String getFilePath() {
-        return file.getPath();
+        return sourceFile.getPath();
     }
 
     /**
      * Return the content of the Blob
-     * @return
+     * @return the content in byte
      */
     public byte[] getContent() {
         return content;

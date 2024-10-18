@@ -13,12 +13,11 @@ import static gitlet.Utils.*;
  *  TODO: It's a good idea to give a description here of what else this Class
  *  does at a high level.
  *
- *  @author TODO
+ *  @author Junliang-7
  */
 public class Repository {
     /**
      * TODO: add instance variables here.
-     *
      * List all instance variables of the Repository class here with a useful
      * comment above them describing what that variable represents and how that
      * variable is used. We've provided two examples for you.
@@ -29,9 +28,6 @@ public class Repository {
 
     /** The .gitlet directory. */
     public static final File GITLET_DIR = join(CWD, ".gitlet");
-
-    /** The ref directory. */
-    public static final File REFS_DIR = join(GITLET_DIR, "refs");
 
     /** The object directory. */
     public static final File OBJECTS_DIR = join(GITLET_DIR, "objects");
@@ -52,7 +48,7 @@ public class Repository {
     public static final File HEAD = join(GITLET_DIR, "HEAD");
 
     /** The current branch. */
-    private static File CURRENT_BRANCH = join(GITLET_DIR, "BRANCH");
+    private static final File CURRENT_BRANCH = join(GITLET_DIR, "BRANCH");
 
     /* TODO: fill in the rest of this class. */
 
@@ -90,7 +86,7 @@ public class Repository {
      * area with the new contents. The staging area should be somewhere in .gitlet. If the
      * current working version of the file is identical to the version in the current commit,
      * do not stage it to be added, and remove it from the staging area if it is already
-     * there (as can happen when a file is changed, added, and then changed back to it’s original
+     * there (as can happen when a file is changed, added, and then changed back to its original
      * version). The file will no longer be staged for removal (see gitlet rm), if it was at
      * the time of the command.*/
     public void add(String fileName) {
@@ -261,7 +257,7 @@ public class Repository {
         Commit currentCommit = readHEAD();
 
         // iterate through the commit history
-        while (!currentCommit.getParent().isEmpty()) {
+        while (!currentCommit.getParents().isEmpty()) {
             // print out the log
             printCommit(currentCommit);
 
@@ -304,6 +300,10 @@ public class Repository {
     private void printCommit(Commit commit) {
         System.out.println("===");
         System.out.println("commit " + commit.getUID());
+        if (commit.getParents().size() > 1) {
+            System.out.println("Merge: " + commit.getParents().get(0).substring(0, 7)
+                    + " " + commit.getParents().get(1).substring(0, 7));
+        }
         System.out.println("Date: " + commit.getTimestamp());
         System.out.println(commit.getMessage());
         System.out.println();
@@ -313,7 +313,7 @@ public class Repository {
      *  one per line. If there are multiple such commits, it prints the ids out on separate lines.
      *  The commit message is a single operand; to indicate a multiword message,
      *  put the operand in quotation marks, as for the commit command below
-     * @param message
+     * @param message the commit message
      *  */
     public void find(String message) {
         // get all the commit in the COMMIT_DIR
@@ -341,26 +341,8 @@ public class Repository {
     }
 
     /** Displays what branches currently exist, and marks the current branch with a *.
-     *  Also displays what files have been staged for addition or removal. An example
-     *  of the exact format it should follow is as follows.
-     *  === Branches ===
-     * *master
-     * other-branch
-     *
-     * === Staged Files ===
-     * wug.txt
-     * wug2.txt
-     *
-     * === Removed Files ===
-     * goodbye.txt
-     *
-     * === Modifications Not Staged For Commit ===
-     * junk.txt (deleted)
-     * wug3.txt (modified)
-     *
-     * === Untracked Files ===
-     * random.stuff
-     *  */
+     *  Also displays what files have been staged for addition or removal.
+     */
     public void status() {
         if (!isInit()) {
             printNotInitAndExit();
@@ -404,7 +386,7 @@ public class Repository {
             // check if deleted
             File file = getFileFromCWD(filePath);
             if (!file.exists()) {
-                if (!readRemovalArea().getPathToBlobs().containsKey(filePath)) {
+                if (!readRemovalArea().containsFile(filePath)) {
                     System.out.println(file.getName() + " (deleted)");
                 }
                 continue;
@@ -439,11 +421,7 @@ public class Repository {
      */
     private void printRemovedFiles() {
         System.out.println("=== Removed Files ===");
-        Map<String, String> removalBlobs = readRemovalArea().getPathToBlobs();
-        for (String removalBlobPath : removalBlobs.keySet()) {
-            File file = join(removalBlobPath);
-            System.out.println(file.getName());
-        }
+        readRemovalArea().print();
         System.out.println();
     }
 
@@ -452,11 +430,7 @@ public class Repository {
      */
     private void printStageFiles() {
         System.out.println("=== Staged Files ===");
-        Map<String, String> additionBlobs = readAdditionArea().getPathToBlobs();
-        for (String addBlobPath : additionBlobs.keySet()) {
-            File file = join(addBlobPath);
-            System.out.println(file.getName());
-        }
+        readAdditionArea().print();
         System.out.println();
     }
 
@@ -466,6 +440,7 @@ public class Repository {
     private void printBranches() {
         System.out.println("=== Branches ===");
         List<String> branches = plainFilenamesIn(BRANCH_DIR);
+        assert branches != null;
         for (String branch : branches) {
             if (readContentsAsString(CURRENT_BRANCH).equals(branch)) {
                 System.out.print("*");
@@ -513,7 +488,7 @@ public class Repository {
 
     /**
      * Check if the file exist. if the file does not exist at all, print an error message
-     * @param file
+     * @param file the file
      */
     private void checkFileExists(File file) {
         if (!file.exists()) {
@@ -524,7 +499,7 @@ public class Repository {
 
     /**
      * if the file is identical as the previous one, terminate the program.
-     * @param file
+     * @param file the file
      */
     private void checkIdentical(File file) {
         if (readHEAD().getPathToBlobs().containsKey(file.getPath())) {
@@ -547,7 +522,7 @@ public class Repository {
 
     /**
      * deserialize the HEAD as Commit
-     * @return
+     * @return the head Commit
      */
     private static Commit readHEAD() {
         File head = join(COMMITS_DIR, readContentsAsString(HEAD));
@@ -583,7 +558,6 @@ public class Repository {
          * </pre>
          */
         GITLET_DIR.mkdirs();
-        REFS_DIR.mkdirs();
         OBJECTS_DIR.mkdirs();
         BLOBS_DIR.mkdirs();
         COMMITS_DIR.mkdirs();
@@ -602,7 +576,7 @@ public class Repository {
 
     /**
      * Set the branch point to the Commit
-     * @param commit
+     * @param commit the commit
      */
     private void updateBranch(Commit commit) {
         File branchFile = join(BRANCH_DIR, readContentsAsString(CURRENT_BRANCH));
@@ -672,14 +646,13 @@ public class Repository {
             message("No commit with that id exists.");
             System.exit(0);
         }
-        Commit commit = readObject(commitFile, Commit.class);
-        return commit;
+        return readObject(commitFile, Commit.class);
     }
 
     /**
      * Check out the file from the Commit using its file name
-     * @param commit
-     * @param fileName
+     * @param commit the commit
+     * @param fileName the file name
      */
     private void checkoutFile(Commit commit, String fileName) {
         File file = join(CWD, fileName);
@@ -705,6 +678,7 @@ public class Repository {
     private static File shortIDCommit(String commitID) {
         List<String> commitList = plainFilenamesIn(COMMITS_DIR);
         int length = commitID.length();
+        assert commitList != null;
         for (String commit : commitList) {
             if (commit.substring(0, length).equals(commitID)) {
                 return join(COMMITS_DIR, commit);
@@ -742,8 +716,7 @@ public class Repository {
         }
 
         Branch branch = readObject(branchFile, Branch.class);
-        File newCommitFile = join(COMMITS_DIR, branch.getCommitPointer());
-        Commit commit = readObject(newCommitFile, Commit.class);
+        Commit commit = Commit.fromFile(branch.getCommitPointer());
 
         // change the CWD
         checkoutBranchHelper(commit, readHEAD());
@@ -757,8 +730,8 @@ public class Repository {
 
     /**
      * Change the CWD status, from the old commit to the new commit.
-     * @param newCommit
-     * @param oldCommit
+     * @param newCommit the new Commit
+     * @param oldCommit the old Commit
      */
     private void checkoutBranchHelper(Commit newCommit, Commit oldCommit) {
         Map<String, String> oldBlobs = oldCommit.getPathToBlobs();
@@ -775,11 +748,6 @@ public class Repository {
                 }
             }
         }
-//        if (untrackedExist(oldCommit.getUID())) {
-//            message("There is an untracked file in the way; "
-//                            + "delete it, or add and commit it first.");
-//                    System.exit(0);
-//        }
 
         // add new files to the new Commit
         for (String filePath : newBlobs.keySet()) {
@@ -796,35 +764,9 @@ public class Repository {
         }
     }
 
-    private boolean untrackedExist(String commitID) {
-        Commit commit = Commit.fromFile(commitID);
-
-        List<String> untrackedFile = getUntrackedFileInCWD(commit);
-        for (String fileName : untrackedFile) {
-            if (commit.checkUntracked(fileName)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private List<String> getUntrackedFileInCWD(Commit commit) {
-        List<String> fileInCWD = plainFilenamesIn(CWD);
-        List<String> untrackedFile = new ArrayList<>();
-        for (String fileName : fileInCWD) {
-            for (String filePath : commit.getPathToBlobs().keySet()) {
-                System.out.println(String.format("%s\\%s", CWD, fileName));
-                if (String.format("%s\\%s", CWD, fileName).equals(filePath)) {
-                    untrackedFile.add(fileName);
-                }
-            }
-        }
-        return untrackedFile;
-    }
-
     /**
      * Creates a new branch with the given name, and points it at the current head commit.
-     * A branch is nothing more than a name for a reference (a SHA-1 identifier) to a commit node.
+     * A branch is nothing more than a name for a reference (an SHA-1 identifier) to a commit node.
      * This command does NOT immediately switch to the newly created branch (just as in real Git).
      * Before you ever call branch, your code should be running with a default branch called “master”.
      * @param branchName the name of the new branch to create
@@ -863,6 +805,7 @@ public class Repository {
         // find the branch name, and remove it.
         boolean found = false;
         List<String> branches = plainFilenamesIn(BRANCH_DIR);
+        assert branches != null;
         for (String branch : branches) {
             if (branch.equals(branchName)) {
                 Branch.fromFile(branch).delete();
@@ -885,13 +828,13 @@ public class Repository {
      * abbreviated as for checkout. The staging area is cleared. The command
      * is essentially checkout of an arbitrary commit that also changes the
      * current branch head.
-     * @param commitID
+     * @param commitID the Commit ID, which can be short as well
      */
     public void reset(String commitID) {
         if (!isInit()) {
             printNotInitAndExit();
         }
-        Commit commit = getCommitFromID(commitID);
+        Commit commit = Commit.fromFile(commitID);
         checkoutBranchHelper(commit, readHEAD());
 
         updateHead(commit.getUID());
@@ -901,7 +844,7 @@ public class Repository {
 
     /**
      * Merges files from the given branch into the current branch.
-     * @param branchName
+     * @param branchName the branch name
      */
     public void merge(String branchName) {
         if (!isInit()) {
@@ -1025,16 +968,20 @@ public class Repository {
         }
     }
 
+    /**
+     * Help merge the file modified in the other commit and add it to the addition area
+     * @param blob the blob to add
+     */
     private void mergeFileHelper(Blob blob) {
-        byte[] content = blob.getContent();
         File file = new File(blob.getFilePath());
         if (file.exists()) {
             file.delete();
         }
         createNewFile(file);
+        byte[] content = blob.getContent();
         writeContents(file, content);
         // add to the staging area
-        readAdditionArea().addBlob(blob);
+        readAdditionArea().addBlob(file.getPath(), blob.getUID());
     }
 
     /**
@@ -1045,8 +992,8 @@ public class Repository {
     private void mergeCommit(String branchName, Commit branchCommit) {
         // create the merge Commit
         String commitMessage = "Merged " + branchName + " into " + readContentsAsString(CURRENT_BRANCH) + ".";
-        Commit commit = new Commit(commitMessage, branchCommit);
-        commit.addParent(readHEAD().getUID());
+        Commit commit = new Commit(commitMessage, readHEAD());
+        commit.addParent(branchCommit.getUID());
         commitHelper(commit);
         commit.save();
 
@@ -1213,17 +1160,13 @@ public class Repository {
         for (String branchName : branches) {
             if (branch.equals(branchName)) {
                 found = true;
+                break;
             }
         }
         if (!found) {
             message("A branch with that name does not exist.");
             System.exit(0);
         }
-
-
-
-
     }
-
 
 }
