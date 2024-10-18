@@ -22,7 +22,7 @@ public class Commit implements Serializable {
     private final String timestamp;
 
     /** The parent of this Commit. */
-    public final List<String> parents;
+    private final List<String> parents;
 
     /** The UID of this Commit. */
     private final String UID;
@@ -63,7 +63,7 @@ public class Commit implements Serializable {
      * @return the UID
      */
     private String createUID() {
-        return sha1(timestamp, message, parents.toString(), blobs.toString());
+        return sha1(message, parents.toString(), timestamp);
     }
 
     /**

@@ -1135,7 +1135,7 @@ public class Repository {
        while (!q.isEmpty()) {
            String commitID = q.poll();
            Commit thisCommit = Commit.fromFile(commitID);
-           for (String parentCommit : thisCommit.parents) {
+           for (String parentCommit : thisCommit.getParents()) {
                if (!route.containsKey(parentCommit)) {
                    route.put(parentCommit, route.get(commitID) + 1);
                    q.add(parentCommit);
