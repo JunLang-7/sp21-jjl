@@ -1,6 +1,6 @@
 package gitlet;
 
-import static gitlet.Utils.*;
+import static gitlet.Utils.message;
 /** Driver class for Gitlet, a subset of the Git version-control system.
  *  @author TODO
  */
@@ -18,85 +18,81 @@ public class Main {
         }
         String firstArg = args[0];
         switch(firstArg) {
-            case "init":
+            case "init" -> {
                 // TODO: handle the `init` command
                 validateArgsNum(args, 1);
                 repo.init();
-                break;
-            case "add":
+            }
+            case "add" -> {
                 // TODO: handle the `add [filename]` command
                 validateArgsNum(args, 2);
                 repo.add(args[1]);
-                break;
-            // TODO: FILL THE REST IN
-            case "commit":
+            }
+            case "commit" -> {
                 if (args.length != 2 || args[1].isEmpty()) {
                     message("Please enter a commit message.");
                     System.exit(0);
                 }
                 repo.commit(args[1]);
-                break;
-            case "log":
+            }
+            case "log" -> {
                 validateArgsNum(args, 1);
                 repo.log();
-                break;
-            case "global-log":
+            }
+            case "global-log" -> {
                 validateArgsNum(args, 1);
-                repo.global_log();
-                break;
-            case "rm":
+                repo.globalLog();
+            }
+            case "rm" -> {
                 validateArgsNum(args, 2);
                 repo.rm(args[1]);
-                break;
-            case "find":
+            }
+            case "find" -> {
                 validateArgsNum(args, 2);
                 repo.find(args[1]);
-                break;
-            case "status":
+            }
+            case "status" -> {
                 validateArgsNum(args, 1);
                 repo.status();
-                break;
-            case "checkout":
+            }
+            case "checkout" -> {
                 switch (args.length) {
-                    case 3:
+                    case 3 -> {
                         if (!args[1].equals("--")) {
                             validateArgsNum(args, 100);
                         }
                         repo.checkout(args[2]);
-                        break;
-                    case 4:
+                }
+                    case 4 -> {
                         if (!args[2].equals("--")) {
                             validateArgsNum(args, 100);
                         }
                         repo.checkout(args[1], args[3]);
-                        break;
-                    case 2:
-                        repo.checkoutBranch(args[1]);
-                        break;
-                    default:
-                        validateArgsNum(args, 100);
                 }
-                break;
-            case "branch":
+                    case 2 -> repo.checkoutBranch(args[1]);
+                    default -> validateArgsNum(args, 100);
+                }
+            }
+            case "branch" -> {
                 validateArgsNum(args, 2);
                 repo.branch(args[1]);
-                break;
-            case "rm-branch":
+            }
+            case "rm-branch" -> {
                 validateArgsNum(args, 2);
                 repo.rm_branch(args[1]);
-                break;
-            case "reset":
+            }
+            case "reset" -> {
                 validateArgsNum(args, 2);
                 repo.reset(args[1]);
-                break;
-            case "merge":
+            }
+            case "merge" -> {
                 validateArgsNum(args, 2);
                 repo.merge(args[1]);
-                break;
-            default:
-                message("No command with that name exists.");
+            }
+            default -> message("No command with that name exists.");
         }
-
+        // TODO: FILL THE REST IN
+        
     }
 
     /**

@@ -3,26 +3,27 @@ package gitlet;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 
-import static gitlet.Utils.*;
-
-// TODO: any imports you need here
+import static gitlet.Utils.UID_LENGTH;
+import static gitlet.Utils.createNewFile;
+import static gitlet.Utils.join;
+import static gitlet.Utils.message;
+import static gitlet.Utils.plainFilenamesIn;
+import static gitlet.Utils.readContentsAsString;
+import static gitlet.Utils.readObject;
+import static gitlet.Utils.restrictedDelete;
+import static gitlet.Utils.writeContents;
 
 /** Represents a gitlet repository.
- *  TODO: It's a good idea to give a description here of what else this Class
- *  does at a high level.
- *
  *  @author Junliang-7
  */
 public class Repository {
-    /**
-     * TODO: add instance variables here.
-     * List all instance variables of the Repository class here with a useful
-     * comment above them describing what that variable represents and how that
-     * variable is used. We've provided two examples for you.
-     */
-
     /** The current working directory. */
     public static final File CWD = new File(System.getProperty("user.dir"));
 
@@ -96,8 +97,8 @@ public class Repository {
         }
         File fileToAdd = getFileFromCWD(fileName);
 
-        if (readRemovalArea().getPathToBlobs().containsKey(fileName)) {
-            readRemovalArea().getPathToBlobs().remove(fileToAdd.getPath());
+        if (readRemovalArea().getPathToBlobs().containsKey(fileToAdd.getPath())) {
+            readRemovalArea().removeBlob(fileToAdd.getPath());
             return;
         }
 
@@ -110,9 +111,11 @@ public class Repository {
         blob.save();
         StagingArea additionArea = readAdditionArea();
         additionArea.addBlob(blob);
+        // additionArea.save();
     }
 
-    /**Description: Saves a snapshot of tracked files in the current commit
+    /**
+     * Description: Saves a snapshot of tracked files in the current commit
      * and staging area so they can be restored at a later time, creating a new commit.
      * The commit is said to be tracking the saved files. By default, each commit’s
      * snapshot of files will be exactly the same as its parent commit’s snapshot of files;
@@ -177,8 +180,8 @@ public class Repository {
             }
             // Check if the toAddBlob is identical to the one in pre Commit
             for (String blobPath : commitBlobs.keySet()) {
-                if (blobPath.equals(addBlobPath) &&
-                        !commitBlobs.get(blobPath).equals(addBlobs.get(addBlobPath))) {
+                if (blobPath.equals(addBlobPath) 
+                        && !commitBlobs.get(blobPath).equals(addBlobs.get(addBlobPath))) {
                     // add all the modified blobs and remove the old ones
                     toRemove.add(blobPath);
                     toAdd.add(blobPath);
@@ -270,7 +273,7 @@ public class Repository {
     /** Like log, except displays information about all commits ever made.
      * The order of the commits does not matter. Hint: there is a useful method
      * in gitlet.Utils that will help you iterate over files within a directory.*/
-    public void global_log() {
+    public void globalLog() {
         if (!isInit()) {
             printNotInitAndExit();
         }
@@ -278,10 +281,7 @@ public class Repository {
         // get all the commit in the COMMIT_DIR
         List<String> commitList = plainFilenamesIn(COMMITS_DIR);
 
-        if (commitList == null || commitList.isEmpty()) {
-            System.exit(0);
-        }
-
+        assert commitList != null;
         for (String commitID : commitList) {
             Commit commit = Commit.fromFile(commitID);
             printCommit(commit);
@@ -313,30 +313,33 @@ public class Repository {
      *  one per line. If there are multiple such commits, it prints the ids out on separate lines.
      *  The commit message is a single operand; to indicate a multiword message,
      *  put the operand in quotation marks, as for the commit command below
-     * @param message the commit message
+     * @param commitMessage the commit message
      *  */
-    public void find(String message) {
+    public void find(String commitMessage) {
+        if (!isInit()) {
+            printNotInitAndExit();
+        }
+
         // get all the commit in the COMMIT_DIR
         List<String> commitList = plainFilenamesIn(COMMITS_DIR);
+        List<String> commitToPrint = new ArrayList<>();
 
-        if (commitList == null || commitList.isEmpty()) {
+        assert commitList != null;
+        for (String commitID : commitList) {
+            Commit commit = Commit.fromFile(commitID);
+            String message = commit.getMessage();
+            if (message.equals(commitMessage)) {
+                commitToPrint.add(commitID);
+            }
+        }
+
+        if (commitToPrint.isEmpty()) {
             message("Found no commit with that message.");
             System.exit(0);
         }
 
-        // add a flag to detect whether is matched
-        boolean found = false;
-
-        for (String commitID : commitList) {
-            Commit commit = Commit.fromFile(commitID);
-            if (commit.getMessage().equals(message)) {
-                printCommit(commit);
-                found = true;
-            }
-        }
-
-        if (!found) {
-            message("Found no commit with that message.");
+        for (String commitID : commitToPrint) {
+            System.out.println(commitID);
         }
     }
 
@@ -364,9 +367,9 @@ public class Repository {
             for (String fileName : files) {
                 File file = getFileFromCWD(fileName);
                 String filePath = file.getPath();
-                if (!readHEAD().getPathToBlobs().containsKey(filePath) &&
-                !readAdditionArea().getPathToBlobs().containsKey(filePath) &&
-                !readRemovalArea().getPathToBlobs().containsKey(filePath)) {
+                if (!readHEAD().getPathToBlobs().containsKey(filePath) 
+                        && !readAdditionArea().containsFile(filePath)
+                        && !readRemovalArea().containsFile(filePath)) {
                     System.out.println(fileName);
                 }
             }
@@ -389,7 +392,7 @@ public class Repository {
                 if (!readRemovalArea().containsFile(filePath)) {
                     System.out.println(file.getName() + " (deleted)");
                 }
-                continue;
+                break;
             }
             // check if modified
             Blob blob = new Blob(file);
@@ -405,7 +408,7 @@ public class Repository {
             File file = getFileFromCWD(filePath);
             if (!file.exists()) {
                 System.out.println(file.getName() + " (deleted)");
-                continue;
+                break;
             }
             Blob blob = new Blob(file);
             if (!blob.getUID().equals(readAdditionArea().getPathToBlobs().get(filePath))) {
@@ -612,7 +615,7 @@ public class Repository {
         if (!isInit()) {
             printNotInitAndExit();
         }
-        checkoutFile(readHEAD(), fileName);
+        checkoutFileHelper(readHEAD(), fileName);
     }
 
     /**
@@ -627,11 +630,6 @@ public class Repository {
             printNotInitAndExit();
         }
 
-        Commit commit = getCommitFromID(commitID);
-        checkoutFile(commit, fileName);
-    }
-
-    private Commit getCommitFromID(String commitID) {
         File commitFile;
         if (commitID.length() < UID_LENGTH) {
             commitFile = shortIDCommit(commitID);
@@ -641,12 +639,12 @@ public class Repository {
         }
 
         // if the commit id doesn't exist
-        assert commitFile != null;
         if (!commitFile.exists()) {
             message("No commit with that id exists.");
             System.exit(0);
         }
-        return readObject(commitFile, Commit.class);
+        Commit commit = readObject(commitFile, Commit.class);
+        checkoutFileHelper(commit, fileName);
     }
 
     /**
@@ -654,7 +652,7 @@ public class Repository {
      * @param commit the commit
      * @param fileName the file name
      */
-    private void checkoutFile(Commit commit, String fileName) {
+    private void checkoutFileHelper(Commit commit, String fileName) {
         File file = join(CWD, fileName);
         String filePath = file.getPath();
         if (!commit.getPathToBlobs().containsKey(filePath)) {
@@ -672,16 +670,16 @@ public class Repository {
 
     /**
      * Return the Commit File with the short Commit ID.
-     * @param commitID the short commit ID
+     * @param shortID the short commit ID
      * @return the correlate commit file
      */
-    private static File shortIDCommit(String commitID) {
+    private static File shortIDCommit(String shortID) {
         List<String> commitList = plainFilenamesIn(COMMITS_DIR);
-        int length = commitID.length();
+        int length = shortID.length();
         assert commitList != null;
-        for (String commit : commitList) {
-            if (commit.substring(0, length).equals(commitID)) {
-                return join(COMMITS_DIR, commit);
+        for (String commitID : commitList) {
+            if (commitID.substring(0, length).equals(shortID)) {
+                return join(COMMITS_DIR, commitID);
             }
         }
         return null;
@@ -715,7 +713,7 @@ public class Repository {
             System.exit(0);
         }
 
-        Branch branch = readObject(branchFile, Branch.class);
+        Branch branch = Branch.fromFile(branchName);
         Commit commit = Commit.fromFile(branch.getCommitPointer());
 
         // change the CWD
@@ -752,7 +750,7 @@ public class Repository {
         // add new files to the new Commit
         for (String filePath : newBlobs.keySet()) {
             File file = new File(filePath);
-            checkoutFile(newCommit, file.getName());
+            checkoutFileHelper(newCommit, file.getName());
         }
 
         // remove the old files from the old Commit
@@ -778,7 +776,7 @@ public class Repository {
         List<String> branches = plainFilenamesIn(BRANCH_DIR);
         assert branches != null;
         if (branches.contains(branchName)) {
-            System.out.println("A branch with that name already exists.");
+            message("A branch with that name already exists.");
             System.exit(0);
         }
 
@@ -803,21 +801,16 @@ public class Repository {
         }
 
         // find the branch name, and remove it.
-        boolean found = false;
         List<String> branches = plainFilenamesIn(BRANCH_DIR);
         assert branches != null;
-        for (String branch : branches) {
-            if (branch.equals(branchName)) {
-                Branch.fromFile(branch).delete();
-                found = true;
-                break;
-            }
-        }
         // if not found, print out an error message.
-        if (!found) {
+        if (!branches.contains(branchName)) {
             message("A branch with that name does not exist.");
             System.exit(0);
         }
+
+        File branchFile = join(BRANCH_DIR, branchName);
+        branchFile.delete();
     }
 
     /**
@@ -834,7 +827,11 @@ public class Repository {
         if (!isInit()) {
             printNotInitAndExit();
         }
-        Commit commit = Commit.fromFile(commitID);
+        File commitFile = join(COMMITS_DIR, commitID);
+        if (!commitFile.exists()) {
+            message("No commit with that id exists.");
+        }
+        Commit commit = readObject(commitFile, Commit.class);
         checkoutBranchHelper(commit, readHEAD());
 
         updateHead(commit.getUID());
@@ -868,7 +865,7 @@ public class Repository {
         Commit splitCommit = getSplitCommit(branchName);
 
         // get the branch commit(other commit)
-        Branch branch = readObject(Branch.fromFile(branchName), Branch.class);
+        Branch branch = Branch.fromFile(branchName);
         String branchCommitID = branch.getCommitPointer();
         Commit branchCommit = Commit.fromFile(branchCommitID);
 
@@ -914,13 +911,13 @@ public class Repository {
 
         for (String filePath : mergeResult.keySet()) {
             switch (mergeResult.get(filePath)) {
-                case "0":
+                case "0" -> {
                     if (headCommitFiles.containsKey(filePath)) {
                         File file = new File(filePath);
                         rm(file.getName());
                     }
-                    break;
-                case "conflict":
+                }
+                case "conflict" -> {
                     String headBlobUID = headCommitFiles.get(filePath);
                     String branchBlobUID = branchCommitFiles.get(filePath);
                     String content, current, branch;
@@ -955,15 +952,15 @@ public class Repository {
                     Blob newBlob = new Blob(file);
                     newBlob.save();
                     readAdditionArea().addBlob(filePath, newBlob.getUID());
-                    break;
-                default:
+                }
+                default -> {
                     // if in the branch commit
                     if (headCommitFiles.get(filePath).equals("0")
-                    || !mergeResult.get(filePath).equals(headCommitFiles.get(filePath))) {
+                            || !mergeResult.get(filePath).equals(headCommitFiles.get(filePath))) {
                         Blob blob = Blob.fromFile(mergeResult.get(filePath));
                         mergeFileHelper(blob);
                     }
-                    break;
+                }
             }
         }
     }
@@ -1101,8 +1098,7 @@ public class Repository {
      */
     private Commit getSplitCommit(String branchName) {
         // get the branch commit
-        File branchFile = Branch.fromFile(branchName);
-        Branch branch = readObject(branchFile, Branch.class);
+        Branch branch = Branch.fromFile(branchName);
         String commitID = branch.getCommitPointer();
         Commit branchCommit = Commit.fromFile(commitID);
 

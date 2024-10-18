@@ -1,13 +1,22 @@
 package gitlet;
 
 // TODO: any imports you need here
-import static gitlet.Utils.*;
-
 import java.io.File;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+import static gitlet.Utils.createNewFile;
+import static gitlet.Utils.join;
+import static gitlet.Utils.readObject;
+import static gitlet.Utils.sha1;
+import static gitlet.Utils.writeObject;
 
 /** Represents a gitlet commit object.
  *  with the attribution of message, time, parents and UID.
@@ -25,7 +34,7 @@ public class Commit implements Serializable {
     private final List<String> parents;
 
     /** The UID of this Commit. */
-    private final String UID;
+    private String UID;
 
     /** The date of this Commit. */
     private final Date date;
@@ -42,9 +51,9 @@ public class Commit implements Serializable {
         this.date = new Date(0);
         this.parents = new ArrayList<>();
         this.timestamp = createTimestamp();
-        this.UID = createUID();
         this.pathToBlobs = new HashMap<>();
         this.blobs = new ArrayList<>();
+        this.UID = createUID();
     }
 
     public Commit(String message, Commit parent) {
@@ -53,9 +62,9 @@ public class Commit implements Serializable {
         this.parents.add(parent.getUID());
         this.date = new Date();
         this.timestamp = createTimestamp();
-        this.UID = createUID();
         this.pathToBlobs = parent.pathToBlobs;
         this.blobs = parent.blobs;
+        this.UID = createUID();
     }
 
     /**
@@ -63,7 +72,7 @@ public class Commit implements Serializable {
      * @return the UID
      */
     private String createUID() {
-        return sha1(message, parents.toString(), timestamp);
+        return sha1(message, parents.toString(), blobs.toString(), timestamp);
     }
 
     /**
@@ -107,7 +116,8 @@ public class Commit implements Serializable {
      * @return the Commit from file
      */
     public static Commit fromFile(String commitUID) {
-        return readObject(join(Repository.COMMITS_DIR, commitUID), Commit.class);
+        return readObject(
+            join(Repository.COMMITS_DIR, commitUID), Commit.class);
     }
 
     /**
@@ -130,6 +140,7 @@ public class Commit implements Serializable {
      * Save the commit to the file with the name UID.
      */
     public void save() {
+        this.UID = createUID();
         File commitFile = join(Repository.COMMITS_DIR, getUID());
         createNewFile(commitFile);
         writeObject(commitFile, this);
@@ -158,7 +169,7 @@ public class Commit implements Serializable {
      */
     public void addBlob(String blobPath, String blobUID) {
         pathToBlobs.put(blobPath, blobUID);
-        blobs.add(blobPath);
+        blobs.add(blobUID);
     }
 
     /**
@@ -170,7 +181,10 @@ public class Commit implements Serializable {
         blobs.remove(pathToBlobs.get(blobPath));
     }
 
-    public void checkPath() {
+    /**
+     * Change the path of the Commit.
+     */
+    public void changePath() {
         Map<String, String> newPathToBlobs = new HashMap<>();
         for (String oldPath : pathToBlobs.keySet()) {
             File oldFile = new File(oldPath);

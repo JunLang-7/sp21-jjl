@@ -2,7 +2,11 @@ package gitlet;
 
 import java.io.File;
 import java.io.Serializable;
-import static gitlet.Utils.*;
+
+import static gitlet.Utils.createNewFile;
+import static gitlet.Utils.join;
+import static gitlet.Utils.readObject;
+import static gitlet.Utils.writeObject;
 
 /**
  * Represents the branch of the repository,
@@ -50,7 +54,8 @@ public class Branch implements Serializable {
         commitPointer = commit.getUID();
     }
 
-    public static File fromFile(String branchName) {
-        return join(Repository.BRANCH_DIR, branchName);
+    public static Branch fromFile(String branchName) {
+        File branchFile = join(Repository.BRANCH_DIR, branchName);
+        return readObject(branchFile, Branch.class);
     }
 }
