@@ -2,7 +2,7 @@ package gitlet;
 
 import static gitlet.Utils.message;
 /** Driver class for Gitlet, a subset of the Git version-control system.
- *  @author TODO
+ *  @author Junlang
  */
 public class Main {
 
@@ -11,7 +11,6 @@ public class Main {
      */
     public static void main(String[] args) {
         Repository repo = new Repository();
-        // TODO: what if args is empty?
         if (args.length == 0) {
             message("Please enter a command.");
             System.exit(0);
@@ -19,12 +18,10 @@ public class Main {
         String firstArg = args[0];
         switch(firstArg) {
             case "init" -> {
-                // TODO: handle the `init` command
                 validateArgsNum(args, 1);
                 repo.init();
             }
             case "add" -> {
-                // TODO: handle the `add [filename]` command
                 validateArgsNum(args, 2);
                 repo.add(args[1]);
             }
@@ -45,7 +42,7 @@ public class Main {
             }
             case "rm" -> {
                 validateArgsNum(args, 2);
-                repo.rm(args[1]);
+                repo.removeBranch(args[1]);
             }
             case "find" -> {
                 validateArgsNum(args, 2);
@@ -61,13 +58,13 @@ public class Main {
                         if (!args[1].equals("--")) {
                             validateArgsNum(args, 100);
                         }
-                        repo.checkout(args[2]);
+                        repo.checkoutHeadFile(args[2]);
                 }
                     case 4 -> {
                         if (!args[2].equals("--")) {
                             validateArgsNum(args, 100);
                         }
-                        repo.checkout(args[1], args[3]);
+                        repo.checkoutCommitFile(args[1], args[3]);
                 }
                     case 2 -> repo.checkoutBranch(args[1]);
                     default -> validateArgsNum(args, 100);
@@ -79,7 +76,7 @@ public class Main {
             }
             case "rm-branch" -> {
                 validateArgsNum(args, 2);
-                repo.rm_branch(args[1]);
+                repo.removeBranch(args[1]);
             }
             case "reset" -> {
                 validateArgsNum(args, 2);
@@ -91,8 +88,6 @@ public class Main {
             }
             default -> message("No command with that name exists.");
         }
-        // TODO: FILL THE REST IN
-        
     }
 
     /**

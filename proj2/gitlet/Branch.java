@@ -7,6 +7,7 @@ import static gitlet.Utils.createNewFile;
 import static gitlet.Utils.join;
 import static gitlet.Utils.readObject;
 import static gitlet.Utils.writeObject;
+import static gitlet.Repository.getBranchDir;
 
 /**
  * Represents the branch of the repository,
@@ -33,7 +34,7 @@ public class Branch implements Serializable {
      * save the Branch to file.
      */
     public void save() {
-        File file = join(Repository.BRANCH_DIR, branchName);
+        File file = join(getBranchDir(), branchName);
         createNewFile(file);
         writeObject(file, this);
     }
@@ -55,7 +56,7 @@ public class Branch implements Serializable {
     }
 
     public static Branch fromFile(String branchName) {
-        File branchFile = join(Repository.BRANCH_DIR, branchName);
+        File branchFile = join(getBranchDir(), branchName);
         return readObject(branchFile, Branch.class);
     }
 }

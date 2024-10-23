@@ -5,6 +5,7 @@ import java.util.*;
 import java.io.File;
 
 import static gitlet.Utils.*;
+import static gitlet.Repository.getStageDir;
 
 /**
  * Represents the staging area of Gitlet,
@@ -77,7 +78,7 @@ public class StagingArea implements Serializable {
      * Save this instance to the file addition or removal
      */
     public void save() {
-        File file = join(Repository.STAGE_DIR, stageName);
+        File file = join(getStageDir(), stageName);
         createNewFile(file);
         writeObject(file, this);
     }

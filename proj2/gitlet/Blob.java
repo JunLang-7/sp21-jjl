@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 
 import static gitlet.Utils.*;
+import static gitlet.Repository.getBlobDir;
 
 /**
  * Represents the object of the file,
@@ -28,7 +29,7 @@ public class Blob implements Serializable {
         String filePath = this.sourceFile.getPath();
         content = readContents(sourceFile);
         UID = sha1(filePath, content);
-        blobFile = join(Repository.BLOBS_DIR, UID);
+        blobFile = join(getBlobDir(), UID);
     }
 
     /**
@@ -45,7 +46,7 @@ public class Blob implements Serializable {
      * @return Blob read from the file
      */
     public static Blob fromFile(String blobUID) {
-        File blobFile =join(Repository.BLOBS_DIR, blobUID);
+        File blobFile = join(getBlobDir(), blobUID);
         return readObject(blobFile, Blob.class);
     }
 

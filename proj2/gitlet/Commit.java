@@ -1,6 +1,5 @@
 package gitlet;
 
-// TODO: any imports you need here
 import java.io.File;
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -17,6 +16,8 @@ import static gitlet.Utils.join;
 import static gitlet.Utils.readObject;
 import static gitlet.Utils.sha1;
 import static gitlet.Utils.writeObject;
+import static gitlet.Repository.getCommitDir;
+import static gitlet.Repository.getCWD;
 
 /** Represents a gitlet commit object.
  *  with the attribution of message, time, parents and UID.
@@ -45,7 +46,6 @@ public class Commit implements Serializable {
     /** The UID of blobs that stores in */
     private final List<String> blobs;
 
-    /* TODO: fill in the rest of this class. */
     public Commit() {
         this.message = "initial commit";
         this.date = new Date(0);
@@ -117,7 +117,7 @@ public class Commit implements Serializable {
      */
     public static Commit fromFile(String commitUID) {
         return readObject(
-            join(Repository.COMMITS_DIR, commitUID), Commit.class);
+            join(getCommitDir(), commitUID), Commit.class);
     }
 
     /**
@@ -141,7 +141,7 @@ public class Commit implements Serializable {
      */
     public void save() {
         this.UID = createUID();
-        File commitFile = join(Repository.COMMITS_DIR, getUID());
+        File commitFile = join(getCommitDir(), getUID());
         createNewFile(commitFile);
         writeObject(commitFile, this);
     }
@@ -182,6 +182,22 @@ public class Commit implements Serializable {
     }
 
     /**
+     * Print out the commit information.
+     */
+    public void print() {
+        System.out.println("===");
+        System.out.println("commit " + UID);
+        if (parents.size() > 1) {
+            String print = "Merge: " + parents.get(0).substring(0, 7)
+                    + " " + parents.get(1).substring(0, 7);
+            System.out.println(print);
+        }
+        System.out.println("Date: " + timestamp);
+        System.out.println(message);
+        System.out.println();
+    }
+
+    /**
      * Change the path of the Commit.
      */
     public void changePath() {
@@ -189,7 +205,7 @@ public class Commit implements Serializable {
         for (String oldPath : pathToBlobs.keySet()) {
             File oldFile = new File(oldPath);
             String fileName = oldFile.getName();
-            File newFile = join(Repository.CWD, fileName);
+            File newFile = join(getCWD(), fileName);
             newPathToBlobs.put(newFile.getPath(), pathToBlobs.get(oldPath));
         }
         pathToBlobs = newPathToBlobs;
