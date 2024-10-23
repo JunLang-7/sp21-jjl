@@ -23,13 +23,13 @@ import static gitlet.Utils.*;
  *          - removeStage
  *  does at a high level.
  *
- *  @author Qiushao
+ *  @author Junlang
  */
 public class Repository {
     /**
      * The current working directory.
      */
-    private static final File CWD = new File(System.getProperty("user.dir"));
+    public static final File CWD = new File(System.getProperty("user.dir"));
 
     /**
      * The .gitlet directory.
@@ -102,7 +102,8 @@ public class Repository {
      */
     public void init() {
         checkIfTheDirectoryNotExist();
-        GITLET_DIR.mkdir();
+        GITLET_DIR.mkdirs();
+        OBJECT_DIR.mkdirs();
         COMMIT_DIR.mkdir();
         BLOB_DIR.mkdir();
         BRANCH_DIR.mkdir();
