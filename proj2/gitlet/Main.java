@@ -42,7 +42,7 @@ public class Main {
             }
             case "rm" -> {
                 validateArgsNum(args, 2);
-                repo.removeBranch(args[1]);
+                repo.remove(args[1]);
             }
             case "find" -> {
                 validateArgsNum(args, 2);

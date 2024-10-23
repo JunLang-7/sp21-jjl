@@ -79,4 +79,5 @@ The class is to help make some utility that can be used in the whole program
 
 ## Persistence
 
-- Always 
+- Always remain the staging area in the Stage Dir
+- Always store the head commit in the HEAD and the current branch in CURRENT_BRANCH
