@@ -2,6 +2,9 @@ package deque;
 
 import edu.princeton.cs.algs4.StdRandom;
 import org.junit.Test;
+
+import java.util.Iterator;
+
 import static org.junit.Assert.*;
 
 
@@ -157,7 +160,7 @@ public class LinkedListDequeTest {
     }
 
     @Test
-    public void iteratorTest(){
+    public void iteratorTest1() {
         LinkedListDeque<Integer> lld1 = new LinkedListDeque<>();
         for (int i = 0; i < 100; i++) {
             lld1.addLast(i);
@@ -166,6 +169,65 @@ public class LinkedListDequeTest {
         int count = 0;
         for (int ele : lld1) {
             assertEquals(count, ele);
+            count++;
+        }
+    }
+
+    @Test
+    public void iteratorTestHasNext() {
+        LinkedListDeque<Integer> lld1 = new LinkedListDeque<>();
+        for (int i = 0; i < 100; i++) {
+            lld1.addLast(i);
+        }
+        for (int i = 0; i < 99; i++) {
+            assertTrue(lld1.iterator().hasNext());
+            lld1.iterator().next();
+        }
+    }
+
+    @Test
+    public void iteratorTestNext() {
+        LinkedListDeque<Integer> lld1 = new LinkedListDeque<>();
+        for (int i = 0; i < 100; i++) {
+            lld1.addLast(i);
+        }
+        int count = 0;
+        Iterator<Integer> iter = lld1.iterator();
+        while (iter.hasNext()) {
+            assertEquals((Integer) count, iter.next());
+            count++;
+        }
+    }
+
+    @Test
+    public void iteratorTestNextTimes() {
+        LinkedListDeque<Integer> lld1 = new LinkedListDeque<>();
+        for (int i = 0; i < 100; i++) {
+            lld1.addLast(i);
+        }
+        int count = 0;
+        Iterator<Integer> iter = lld1.iterator();
+        while (iter.hasNext()) {
+            assertEquals((Integer) count, iter.next());
+            count++;
+            assertEquals((Integer) count, iter.next());
+            count++;
+            assertEquals((Integer) count, iter.next());
+            count++;
+            assertEquals((Integer) count, iter.next());
+            count++;
+        }
+    }
+
+    @Test
+    public void iteratorTestIterable() {
+        LinkedListDeque<Integer> lld1 = new LinkedListDeque<>();
+        for (int i = 0; i < 100; i++) {
+            lld1.addLast(i);
+        }
+        int count = 0;
+        for (Integer ele : lld1) {
+            assertEquals((Integer) count, ele);
             count++;
         }
     }
@@ -214,5 +276,18 @@ public class LinkedListDequeTest {
             lld1.addLast(i);
         }
         assertTrue(lld1.equals(lld2));
+    }
+
+    @Test
+    public void equalsTest5(){
+        LinkedListDeque<Integer> lld = new LinkedListDeque<>();
+        ArrayDeque<Integer> ad = new ArrayDeque<>();
+        assertTrue(lld.equals(ad));
+        for (int i = 0; i < 100; i++) {
+            lld.addLast(i);
+            ad.addLast(i);
+        }
+        assertTrue(lld.equals(ad));
+        assertTrue(lld.equals(lld));
     }
 }

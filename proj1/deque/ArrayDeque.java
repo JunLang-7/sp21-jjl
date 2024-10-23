@@ -114,7 +114,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         } else if (nextLast == array.length) {
             // reach end, resize array deque length to 2x
             resize(array.length * 2);
-        } else if (size() > 16 && size() < (array.length / 4)) {
+        } else if (size() > 16 && ((double)size / array.length) <= 0.25) {
             // If Ratio Usage < 0.25 and size is larger than 10, half array deque length.
             resize(array.length / 2);
         }
@@ -144,21 +144,18 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
+        if (!(obj instanceof Deque)) {
             return false;
         }
         if (obj == this) {
             return true;
         }
-        if (!(obj instanceof ArrayDeque)) {
-            return false;
-        }
-        ArrayDeque other = (ArrayDeque) obj;
-        if (size != other.size) {
+        Deque other = (Deque) obj;
+        if (size != other.size()) {
             return false;
         }
         for (int i = 0; i < size; i++) {
-            if (get(i) != other.get(i)) {
+            if (!get(i).equals(other.get(i))) {
                 return false;
             }
         }

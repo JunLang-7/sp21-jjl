@@ -111,7 +111,7 @@ public class ArrayDequeTest {
 
     @Test
     /* Add large number of elements to deque; check if order is correct. */
-    public void bigLLDequeTest() {
+    public void bigADequeTest() {
 
         ArrayDeque<Integer> ad1 = new ArrayDeque<>();
         for (int i = 0; i < 1000000; i++) {
@@ -125,12 +125,11 @@ public class ArrayDequeTest {
         for (double i = 999999; i > 500000; i--) {
             assertEquals("Should have the same value", i, (double) ad1.removeLast(), 0.0);
         }
-
-
     }
 
+
     @Test
-    public void RandomizeTest(){
+    public void randomizeTest(){
         ArrayDeque<Integer> arr = new ArrayDeque<>();
         LinkedListDeque<Integer> lld = new LinkedListDeque<>();
         for (int i = 0; i < 1000; i++){
@@ -214,5 +213,18 @@ public class ArrayDequeTest {
             arr1.addLast(i);
         }
         assertFalse(arr1.equals(arr2));
+    }
+
+    @Test
+    public void equalsTest5(){
+        LinkedListDeque<Integer> lld = new LinkedListDeque<>();
+        ArrayDeque<Integer> ad = new ArrayDeque<>();
+        assertTrue(ad.equals(lld));
+        for (int i = 0; i < 100; i++) {
+            lld.addLast(i);
+            ad.addLast(i);
+        }
+        assertTrue(ad.equals(lld));
+        assertTrue(ad.equals(ad));
     }
 }
