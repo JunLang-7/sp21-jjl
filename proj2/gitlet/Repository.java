@@ -2,9 +2,23 @@ package gitlet;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Queue;
+import java.util.TreeMap;
 
-import static gitlet.Utils.*;
+import static gitlet.Utils.UID_LENGTH;
+import static gitlet.Utils.createNewFile;
+import static gitlet.Utils.join;
+import static gitlet.Utils.plainFilenamesIn;
+import static gitlet.Utils.readContents;
+import static gitlet.Utils.readContentsAsString;
+import static gitlet.Utils.readObject;
+import static gitlet.Utils.restrictedDelete;
+import static gitlet.Utils.writeContents;
 
 /** Represents a gitlet repository.
  *  The repository structure:
@@ -29,39 +43,39 @@ public class Repository {
     /**
      * The current working directory.
      */
-    public static final File CWD = new File(System.getProperty("user.dir"));
+    public static File CWD = new File(System.getProperty("user.dir"));
 
     /**
      * The .gitlet directory.
      */
-    private static final File GITLET_DIR = join(CWD, ".gitlet");
+    private static File GITLET_DIR = join(CWD, ".gitlet");
 
     /**
      * The objects, commits, blobs directory.
      */
-    private static final File OBJECT_DIR = join(GITLET_DIR, "objects");
-    private static final File COMMIT_DIR = join(OBJECT_DIR, "commits");
-    private static final File BLOB_DIR = join(OBJECT_DIR, "blobs");
+    private static File OBJECT_DIR = join(GITLET_DIR, "objects");
+    private static File COMMIT_DIR = join(OBJECT_DIR, "commits");
+    private static File BLOB_DIR = join(OBJECT_DIR, "blobs");
 
     /**
      * The branches' directory.
      */
-    private static final File BRANCH_DIR = join(GITLET_DIR, "branches");
+    private static File BRANCH_DIR = join(GITLET_DIR, "branches");
 
     /**
      * The stages' directory.
      */
-    private static final File STAGE_DIR = join(GITLET_DIR, "stages");
+    private static File STAGE_DIR = join(GITLET_DIR, "stages");
 
     /**
      * The remotes' directory.
      */
-    private static final File REMOTE_DIR = join(GITLET_DIR, "remotes");
+    private static File REMOTE_DIR = join(GITLET_DIR, "remotes");
 
     /**
      * The HEAD pointer.
      */
-    private static final File HEAD = join(GITLET_DIR, "HEAD");
+    private static File HEAD = join(GITLET_DIR, "HEAD");
 
     /**
      * The current commit.
@@ -71,7 +85,7 @@ public class Repository {
     /**
      * The current branch.
      */
-    private static final File CURRENT_BRANCH = join(GITLET_DIR, "BRANCH");
+    private static File CURRENT_BRANCH = join(GITLET_DIR, "BRANCH");
 
     public static File getCWD() {
         return CWD;
@@ -993,5 +1007,230 @@ public class Repository {
         setHEAD();
         setBranch();
         clearStage();
+    }
+
+    /**
+     * The add-remote [remote name] [name of remote directory]/.gitlet command.
+     * @param remoteName the remote name and the remote directory
+     * @param remotePath the remote path
+     */
+    public void addRemote(String remoteName, String remotePath) {
+        checkIfTheDirectoryExist();
+        // check if the remote name already exists
+        List<String> remotes = plainFilenamesIn(REMOTE_DIR);
+        if (remotes != null && remotes.contains(remoteName)) {
+            System.out.println("A remote with that name already exists.");
+            System.exit(0);
+        }
+        remotePath = remotePath.substring(0, remotePath.length() - 8);
+        Remote remote = new Remote(remoteName, remotePath);
+        remote.save();
+    }
+
+    /**
+     * The rm-remote [remote name] command.
+     * @param remoteName the remote name
+     */
+    public void removeRemote(String remoteName) {
+        checkIfTheDirectoryExist();
+        List<String> remotes = plainFilenamesIn(REMOTE_DIR);
+        if (remotes == null || !remotes.contains(remoteName)) {
+            System.out.println("A remote with that name does not exist.");
+            System.exit(0);
+        }
+        File remoteFile = join(REMOTE_DIR, remoteName);
+        remoteFile.delete();
+    }
+
+    /**
+     * The push [remote name] [remote branch name] command.
+     * @param remoteName the remote name
+     * @param remoteBranchName the remote branch name
+     */
+    public void push(String remoteName, String remoteBranchName) {
+        checkIfTheDirectoryExist();
+        checkRemoteExist(remoteName);
+        changeCWD(System.getProperty("user.dir"));
+        // get the head history
+        Commit headCommit = readHEAD();
+        Map<String, Integer> localHistory = getRouteToInit(headCommit);
+        // check if the remote branch exists, if yes, get the remote HEAD and check the history
+        Remote remote = Remote.fromFile(remoteName);
+        changeCWD(remote.getPath());
+        List<String> branches = plainFilenamesIn(BRANCH_DIR);
+        assert branches != null;
+        if (branches.contains(remoteBranchName)) {
+            Branch remoteBranch = Branch.fromFile(remoteBranchName);
+            String remoteBranchCommitId = remoteBranch.getCommitPointer();
+            if (!localHistory.containsKey(remoteBranchCommitId)) {
+                System.out.println("Please pull down remote changes before pushing.");
+                System.exit(0);
+            }
+        }
+        // copy the commit to the remote if the remote branch doesn't exist
+        String from = System.getProperty("user.dir");
+        String to = remote.getPath();
+        for (String commitId : localHistory.keySet()) {
+            copyCommit(commitId, from, to);
+        }
+        // set the remote branch
+        changeCWD(to);
+        if (branches.contains(remoteBranchName)) {
+            Branch remoteBranch = Branch.fromFile(remoteBranchName);
+            remoteBranch.setCommitPointer(headCommit);
+            remoteBranch.save();
+            String currentBranch = readContentsAsString(CURRENT_BRANCH);
+            // set the remote HEAD
+            if (currentBranch.equals(remoteBranchName)) {
+                currentCommit = headCommit;
+                setHEAD();
+            }
+        } else {
+            Branch branch = new Branch(remoteBranchName, headCommit);
+            branch.save();
+        }
+    }
+
+    /**
+     * The fetch [remote name] [remote branch name] command.
+     * @param remoteName the remote name
+     * @param remoteBranchName the remote branch name
+     */
+    public void fetch(String remoteName, String remoteBranchName) {
+        checkIfTheDirectoryExist();
+        checkFetch(remoteName, remoteBranchName);
+        // The CWD is now remote CWD
+        Branch remotBranch = Branch.fromFile(remoteBranchName);
+        String branchCommitId = remotBranch.getCommitPointer();
+        // get the remote branch with its commit history
+        Map<String, Integer> branchHistory = getRouteToInit(Commit.fromFile(branchCommitId));
+        // change the CWD back to the original CWD
+        changeCWD(System.getProperty("user.dir"));
+        // copy the remote commit and branch to the local which is not in the local
+        Remote remote = Remote.fromFile(remoteName);
+        String from = remote.getPath();
+        String to = System.getProperty("user.dir");
+        for (String commitId : branchHistory.keySet()) {
+            copyCommit(commitId, from, to);
+        }
+        // if the remote branch doesn't exist in the local, create a new branch
+        changeCWD(to);
+        String localBranch = remoteName + "/" + remoteBranchName;
+        File localBranchFile = join(BRANCH_DIR, localBranch);
+        File localBranches = join(BRANCH_DIR, remoteName);
+        localBranches.mkdirs();
+        changeCWD(from);
+        Commit remoteCommit = Commit.fromFile(branchCommitId);
+        changeCWD(to);
+        if (!localBranchFile.exists()) {
+            Branch branch = new Branch(localBranch, remoteCommit);
+            branch.save();
+        } else {
+            Branch branch = Branch.fromFile(localBranch);
+            branch.setCommitPointer(remoteCommit);
+            branch.save();
+        }
+    }
+
+    /**
+     * The pull [remote name] [remote branch name] command.
+     * @param remoteName the remote name
+     * @param remoteBranchName the remote branch name
+     */
+    public void pull(String remoteName, String remoteBranchName) {
+        fetch(remoteName, remoteBranchName);
+        merge(remoteName + "/" + remoteBranchName);
+    }
+
+    /**
+     * Change the CWD to the remote directory.
+     * @param remotePath the remote path
+     */
+    private void changeCWD(String remotePath) {
+        CWD = new File(remotePath);
+        GITLET_DIR = join(CWD, ".gitlet");
+        OBJECT_DIR = join(GITLET_DIR, "objects");
+        COMMIT_DIR = join(OBJECT_DIR, "commits");
+        BLOB_DIR = join(OBJECT_DIR, "blobs");
+        BRANCH_DIR = join(GITLET_DIR, "branches");
+        STAGE_DIR = join(GITLET_DIR, "stages");
+        REMOTE_DIR = join(GITLET_DIR, "remotes");
+        HEAD = join(GITLET_DIR, "HEAD");
+        CURRENT_BRANCH = join(GITLET_DIR, "BRANCH");
+    }
+
+    /**
+     * Check if the fetch command is legal and change the CWD.
+     * @param remoteName the remote name
+     * @param remoteBranchName the remote branch name
+     */
+    private void checkFetch(String remoteName, String remoteBranchName) {
+        checkRemoteExist(remoteName);
+        List<String> branches = plainFilenamesIn(BRANCH_DIR);
+        if (branches == null || !branches.contains(remoteBranchName)) {
+            System.out.println("That remote does not have that branch.");
+            System.exit(0);
+        }
+    }
+
+    /**
+     * Check if the remote exists and change the CWD.
+     * @param remoteName the remote name
+     */
+    private void checkRemoteExist(String remoteName) {
+        List<String> remotes = plainFilenamesIn(REMOTE_DIR);
+        if (remotes == null || !remotes.contains(remoteName)) {
+            System.out.println("Remote directory not found.");
+            System.exit(0);
+        }
+        Remote remote = Remote.fromFile(remoteName);
+        changeCWD(remote.getPath());
+    }
+
+    /**
+     * Copy the commit from the source path to the target path.
+     * @param commitId the commit id
+     * @param source the source path
+     * @param target the target path
+     */
+    private void copyCommit(String commitId, String source, String target) {
+        changeCWD(target);
+        File commitFile = join(COMMIT_DIR, commitId);
+        if (commitFile.exists()) {
+            return;
+        }
+        changeCWD(source);
+        File remoteCommitFile = join(COMMIT_DIR, commitId);
+        Commit remoteCommit = Commit.fromFile(commitId);
+        byte[] content = readContents(remoteCommitFile);
+        changeCWD(target);
+        createNewFile(commitFile);
+        writeContents(commitFile, content);
+        Commit commit = readObject(commitFile, Commit.class);
+        commit.changePath();
+        commit.save();
+        for (String bolbId : remoteCommit.getPathToBlobs().values()) {
+            copyBlob(bolbId, source, target);
+        }
+    }
+
+    /**
+     * Copy the blob from the source path to the target path.
+     * @param bolbId the blob id
+     * @param source the source path
+     * @param target the target path
+     */
+    private void copyBlob(String bolbId, String source, String target) {
+        changeCWD(target);
+        File blobFile = join(BLOB_DIR, bolbId);
+        if (blobFile.exists()) {
+            return;
+        }
+        changeCWD(source);
+        File remoteBlobFile = join(BLOB_DIR, bolbId);
+        byte[] content = readContents(remoteBlobFile);
+        changeCWD(target);
+        createNewFile(blobFile);
+        writeContents(blobFile, content);
     }
 }

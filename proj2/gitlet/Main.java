@@ -86,6 +86,26 @@ public class Main {
                 validateArgsNum(args, 2);
                 repo.merge(args[1]);
             }
+            case "add-remote" -> {
+                validateArgsNum(args, 3);
+                repo.addRemote(args[1], args[2]);
+            }
+            case "rm-remote" -> {
+                validateArgsNum(args, 2);
+                repo.removeRemote(args[1]);
+            }
+            case "push" -> {
+                validateArgsNum(args, 3);
+                repo.push(args[1], args[2]);
+            }
+            case "fetch" -> {
+                validateArgsNum(args, 3);
+                repo.fetch(args[1], args[2]);
+            }
+            case "pull" -> {
+                validateArgsNum(args, 3);
+                repo.pull(args[1], args[2]);
+            }
             default -> message("No command with that name exists.");
         }
     }
