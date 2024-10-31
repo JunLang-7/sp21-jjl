@@ -43,7 +43,7 @@ public class Repository {
     /**
      * The current working directory.
      */
-    public static File CWD = new File(System.getProperty("user.dir"));
+    private static File CWD = new File(System.getProperty("user.dir"));
 
     /**
      * The .gitlet directory.
@@ -1126,7 +1126,7 @@ public class Repository {
             Branch branch = new Branch(localBranch, remoteCommit);
             branch.save();
         } else {
-            Branch branch = Branch.fromFile(localBranch);
+            Branch branch = readObject(localBranchFile, Branch.class);
             branch.setCommitPointer(remoteCommit);
             branch.save();
         }
@@ -1178,12 +1178,16 @@ public class Repository {
      * @param remoteName the remote name
      */
     private void checkRemoteExist(String remoteName) {
-        List<String> remotes = plainFilenamesIn(REMOTE_DIR);
-        if (remotes == null || !remotes.contains(remoteName)) {
+        File remoteFile = join(REMOTE_DIR, remoteName);
+        if (!remoteFile.exists()) {
             System.out.println("Remote directory not found.");
             System.exit(0);
         }
-        Remote remote = Remote.fromFile(remoteName);
+        Remote remote = readObject(remoteFile, Remote.class);
+        if (!remote.exists()) {
+            System.out.println("Remote directory not found.");
+            System.exit(0);
+        }
         changeCWD(remote.getPath());
     }
 

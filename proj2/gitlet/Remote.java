@@ -49,7 +49,7 @@ public class Remote implements Serializable {
     /**
      * Check if the remote exists.
      */
-    public static boolean exists(String remoteName) {
+    public boolean exists() {
         File file = join(getRemoteDir(), remoteName);
         return file.exists();
     }
