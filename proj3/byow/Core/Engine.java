@@ -59,11 +59,11 @@ public class Engine {
         StringBuilder buffer = new StringBuilder();
         int index = 0;
         for (char c : input.toCharArray()) {
-            if (c == 'N') {
+            if (c == 'N' || c == 'n') {
                 index++;
                 continue;
             }
-            if (c == 'S') {
+            if (c == 'S' || c == 's') {
                 index++;
                 break;
             }
