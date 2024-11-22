@@ -1,13 +1,21 @@
 package byow.Core;
 
+import byow.Core.Map.BSPMapBuilder;
+import byow.Core.Map.IMapBuilder;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
+
+import java.util.Random;
+
 
 public class Engine {
     TERenderer ter = new TERenderer();
     /* Feel free to change the width and height. */
-    public static final int WIDTH = 80;
-    public static final int HEIGHT = 30;
+    public static final int WIDTH = 60;
+    public static final int HEIGHT = 45;
+    private static long seed;
+    private static Random random;
+    private IMapBuilder mapBuilder;
 
     /**
      * Method used for exploring a fresh world. This method should handle all inputs,
@@ -46,7 +54,47 @@ public class Engine {
         // See proj3.byow.InputDemo for a demo of how you can make a nice clean interface
         // that works for many different input types.
 
-        TETile[][] finalWorldFrame = null;
-        return finalWorldFrame;
+
+        // get the input seed
+        StringBuilder buffer = new StringBuilder();
+        int index = 0;
+        for (char c : input.toCharArray()) {
+            if (c == 'N') {
+                index++;
+                continue;
+            }
+            if (c == 'S') {
+                index++;
+                break;
+            }
+            buffer.append(c);
+            index++;
+        }
+        seed = Long.parseLong(buffer.toString());
+        random = new Random(seed);
+
+        // Create the world randomly based on the seed
+        mapBuilder = new BSPMapBuilder(random);
+        mapBuilder.buildMap();
+
+
+        // get the move step
+        String move = input.substring(index);
+
+        // move the avatar
+
+        ter.initialize(mapBuilder.getWorldMap().width, mapBuilder.getWorldMap().height);
+        ter.renderFrame(mapBuilder.getWorldMap().tiles);
+        return mapBuilder.getWorldMap().tiles;
+    }
+
+    public static void main(String[] args) {
+        TERenderer ter = new TERenderer();
+        ter.initialize(WIDTH, HEIGHT);
+
+        Engine engine = new Engine();
+        TETile[][] world = engine.interactWithInputString("N12345S");
+
+        ter.renderFrame(world);
     }
 }
