@@ -83,8 +83,8 @@ public class Engine {
 
         // move the avatar
 
-        ter.initialize(mapBuilder.getWorldMap().width, mapBuilder.getWorldMap().height);
-        ter.renderFrame(mapBuilder.getWorldMap().tiles);
+//        ter.initialize(mapBuilder.getWorldMap().width, mapBuilder.getWorldMap().height);
+//        ter.renderFrame(mapBuilder.getWorldMap().tiles);
         return mapBuilder.getWorldMap().tiles;
     }
 
@@ -93,7 +93,7 @@ public class Engine {
         ter.initialize(WIDTH, HEIGHT);
 
         Engine engine = new Engine();
-        TETile[][] world = engine.interactWithInputString("N12345S");
+        TETile[][] world = engine.interactWithInputString("n5197880843569031643s");
 
         ter.renderFrame(world);
     }
