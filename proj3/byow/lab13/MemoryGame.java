@@ -81,6 +81,9 @@ public class MemoryGame {
         }
     }
 
+    /**
+     * draw the status menu
+     */
     private void drawStatus() {
         StdDraw.setPenColor(StdDraw.WHITE);
         StdDraw.text(5, height - 2, "Round: " + round);
