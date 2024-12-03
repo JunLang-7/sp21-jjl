@@ -84,7 +84,6 @@ public class Engine {
      * @return the 2D TETile[][] representing the state of the world
      */
     public TETile[][] interactWithInputString(String input) {
-        // TODO: Fill out this method so that it run the engine using the input
         // passed in as an argument, and return a 2D tile representation of the
         // world that would have been drawn if the same inputs had been given
         // to interactWithKeyboard().
@@ -127,7 +126,7 @@ public class Engine {
             avatar.move(step);
         }
 
-        return mapBuilder.getWorldMap().tiles;
+        return mapBuilder.getWorldMap().getTiles();
     }
 
     public static void main(String[] args) {
@@ -135,7 +134,7 @@ public class Engine {
         ter.initialize(WIDTH, HEIGHT);
 
         Engine engine = new Engine();
-        TETile[][] world = engine.interactWithInputString("Lw");
+        TETile[][] world = engine.interactWithInputString("n6547766204324870169ssdswa");
 
         ter.renderFrame(world);
     }

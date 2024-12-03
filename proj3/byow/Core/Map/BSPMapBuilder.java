@@ -25,7 +25,8 @@ public class BSPMapBuilder implements IMapBuilder {
     }
 
     /**
-     * divides a given rectangle (rect) into four smaller sub-rectangles and adds them to the rects list.
+     * divides a given rectangle (rect) into four smaller sub-rectangles
+     * and adds them to the rects list.
      * @param rect the rectangle
      */
     private void addSubRects(Rectangle rect) {
@@ -35,11 +36,13 @@ public class BSPMapBuilder implements IMapBuilder {
         rects.add(new Rectangle(rect.getX(), rect.getY(), halfWidth, halfHeight));
         rects.add(new Rectangle(rect.getX() + halfWidth, rect.getY(), halfWidth, halfHeight));
         rects.add(new Rectangle(rect.getX(), rect.getY() + halfHeight, halfWidth, halfHeight));
-        rects.add(new Rectangle(rect.getX() + halfWidth, rect.getY() + halfHeight, halfWidth, halfHeight));
+        rects.add(new Rectangle(rect.getX() + halfWidth,
+                rect.getY() + halfHeight, halfWidth, halfHeight));
     }
 
     /**
-     * returns a random rectangle from the rects list. If there's only one rectangle, it returns that one.
+     * returns a random rectangle from the rects list.
+     * If there's only one rectangle, it returns that one.
      * @return a random rectangle from the rects list
      */
     private Rectangle getRandomRectangle() {
@@ -73,7 +76,8 @@ public class BSPMapBuilder implements IMapBuilder {
      * @return checks whether a given rectangle can be placed on the map
      */
     private boolean isPossible(Rectangle rect) {
-        Rectangle expend = new Rectangle(rect.getX()-2, rect.getY()-2, rect.getW()+4, rect.getH()+4);
+        Rectangle expend = new Rectangle(rect.getX() - 2, rect.getY() - 2,
+                rect.getW() + 4, rect.getH() + 4);
 
         for (Rectangle room : rooms) {
             if (room.isOverlapped(rect)) {
@@ -83,16 +87,16 @@ public class BSPMapBuilder implements IMapBuilder {
 
         for (int y = expend.getY(); y <= expend.getY() + expend.getH(); y++) {
             for (int x = expend.getX(); x <= expend.getX() + expend.getW(); x++) {
-                if (x > worldMap.width - 2) {
+                if (x > worldMap.getWidth() - 2) {
                     return false;
-                } else if (y > worldMap.height - 2) {
+                } else if (y > worldMap.getHeight() - 2) {
                     return false;
                 } else if (x < 1) {
                     return false;
-                }else if (y < 1) {
+                } else if (y < 1) {
                     return false;
                 }
-                if (!worldMap.tiles[x][y].equals(Tileset.WALL)) {
+                if (!worldMap.getTile(x, y).equals(Tileset.WALL)) {
                     return false;
                 }
             }
@@ -108,7 +112,7 @@ public class BSPMapBuilder implements IMapBuilder {
     private void buildRooms() {
         rects.clear();
 
-        rects.add(new Rectangle(2, 2, worldMap.width - 7, worldMap.height - 7));
+        rects.add(new Rectangle(2, 2, worldMap.getWidth() - 7, worldMap.getHeight() - 7));
         addSubRects(rects.get(0));
 
         int nRooms = 0;
@@ -152,13 +156,12 @@ public class BSPMapBuilder implements IMapBuilder {
                 x += 1;
             } else if (x > endX) {
                 x -= 1;
-            }
-            else if (y < endY) {
+            } else if (y < endY) {
                 y += 1;
             } else if (y > endY) {
                 y -= 1;
             }
-            worldMap.tiles[x][y] = Tileset.FLOOR;
+            worldMap.setTiles(x, y, Tileset.FLOOR);
         }
     }
 
@@ -172,11 +175,11 @@ public class BSPMapBuilder implements IMapBuilder {
         buildRooms();
 
         Position start = rooms.get(0).center();
-        worldMap.tiles[start.x][start.y] = Tileset.AVATAR;
-        worldMap.setEntry(new Position(start.x, start.y));
+        worldMap.setTiles(start.getX(), start.getY(), Tileset.AVATAR);
+        worldMap.setEntry(new Position(start.getX(), start.getY()));
 
         Position stairs = rooms.get(rooms.size() - 1).center();
-        worldMap.tiles[stairs.x][stairs.y] = Tileset.LOCKED_DOOR;
+        worldMap.setTiles(stairs.getX(), stairs.getY(), Tileset.LOCKED_DOOR);
     }
 
     /**

@@ -6,10 +6,10 @@ import byow.TileEngine.TETile;
 import java.io.Serializable;
 
 public class WorldMap implements Serializable {
-    public final TETile[][] tiles;
-    public final int width;
-    public final int height;
-    public Position entry;
+    private final TETile[][] tiles;
+    private final int width;
+    private final int height;
+    private Position entry;
 
     public WorldMap(int width, int height) {
         this.width = width;
@@ -25,7 +25,23 @@ public class WorldMap implements Serializable {
         return entry;
     }
 
-    public void setTiles(Position tile, TETile type) {
-        tiles[tile.x][tile.y] = type;
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public void setTiles(int x, int y, TETile type) {
+        tiles[x][y] = type;
+    }
+
+    public TETile getTile(int x, int y) {
+        return tiles[x][y];
+    }
+
+    public TETile[][] getTiles() {
+        return tiles;
     }
 }

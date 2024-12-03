@@ -1,7 +1,6 @@
 package byow.Core;
 
 import byow.Core.Map.WorldMap;
-import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 
 import java.io.Serializable;
@@ -14,12 +13,13 @@ public class Avatar implements Serializable {
     private int x, y;
     private boolean quit = false;
     private boolean gameOver = false;
+    private final int[][] dirs = new int[][]{{0, 1}, {-1, 0}, {0, -1}, {1, 0}};
 
     public Avatar(WorldMap worldMap) {
         this.worldMap = worldMap;
         Position entry = worldMap.getEntry();
-        x = entry.x;
-        y = entry.y;
+        x = entry.getX();
+        y = entry.getY();
     }
 
     public void move(char direction) {
@@ -36,51 +36,45 @@ public class Avatar implements Serializable {
             }
             default: break;
         }
-        gameOver = worldMap.tiles[x][y].equals(Tileset.LOCKED_DOOR);
-        worldMap.setTiles(new Position(x, y), Tileset.AVATAR);
+        gameOver = worldMap.getTile(x, y).equals(Tileset.LOCKED_DOOR);
+        worldMap.setTiles(x, y, Tileset.AVATAR);
+    }
+
+    /**
+     * The function that abstract the direction move
+     * @param dir the direction
+     */
+    private void goDir(int dir) {
+        quit = false;
+        if (worldMap.getTile(x + dirs[dir][0], y + dirs[dir][1]).equals(Tileset.FLOOR)
+                || worldMap.getTile(x + dirs[dir][0], y + dirs[dir][1]).equals(Tileset.LOCKED_DOOR)) {
+            worldMap.setTiles(x, y, Tileset.FLOOR);
+            switch (dir) {
+                case 0: y++; break;
+                case 1: x--; break;
+                case 2: y--; break;
+                case 3: x++; break;
+                default: break;
+            }
+        }
     }
 
     private void goUp() {
-        quit = false;
-        if (worldMap.tiles[x][y + 1].equals(Tileset.FLOOR)
-                || worldMap.tiles[x][y + 1].equals(Tileset.LOCKED_DOOR)) {
-            worldMap.setTiles(new Position(x, y), Tileset.FLOOR);
-            y++;
-        }
+       goDir(0);
     }
 
     private void goLeft() {
-        quit = false;
-        if (worldMap.tiles[x - 1][y].equals(Tileset.FLOOR)
-                || worldMap.tiles[x - 1][y].equals(Tileset.LOCKED_DOOR)) {
-            worldMap.setTiles(new Position(x, y), Tileset.FLOOR);
-            x--;
-        }
+        goDir(1);
     }
 
     private void goDown() {
-        quit = false;
-        if (worldMap.tiles[x][y - 1].equals(Tileset.FLOOR)
-                || worldMap.tiles[x][y - 1].equals(Tileset.LOCKED_DOOR)) {
-            worldMap.setTiles(new Position(x, y), Tileset.FLOOR);
-            y--;
-        }
+        goDir(2);
     }
 
     private void goRight() {
-        quit = false;
-        if (worldMap.tiles[x + 1][y].equals(Tileset.FLOOR)
-                || worldMap.tiles[x + 1][y].equals(Tileset.LOCKED_DOOR)) {
-            worldMap.setTiles(new Position(x, y), Tileset.FLOOR);
-            x++;
-        }
+        goDir(3);
     }
 
-    public boolean checkCollision(TETile tile) {
-        return tile.description().equals("LOCKED_DOOR");
-    }
-
-    // 获取avatar当前位置的方法
     public int getX() {
         return x;
     }
@@ -89,5 +83,7 @@ public class Avatar implements Serializable {
         return y;
     }
 
-    public boolean isGameOver() { return gameOver; }
+    public boolean isGameOver() {
+        return gameOver;
+    }
 }

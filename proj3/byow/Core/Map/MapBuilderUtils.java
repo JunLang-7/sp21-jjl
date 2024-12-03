@@ -10,9 +10,9 @@ public class MapBuilderUtils {
      * @param map the world map
      */
     public static void resetWorld(WorldMap map) {
-        for (int i = 0; i < map.width; i++) {
-            for (int j = 0; j < map.height; j++) {
-                map.tiles[i][j] = Tileset.WALL;
+        for (int i = 0; i < map.getWidth(); i++) {
+            for (int j = 0; j < map.getHeight(); j++) {
+                map.setTiles(i, j, Tileset.WALL);
             }
         }
     }
@@ -27,7 +27,7 @@ public class MapBuilderUtils {
     public static void applyRectangleRoomToWorld(WorldMap map, Rectangle room) {
         for (int y = room.getY() + 1; y <= room.getY() + room.getH(); y++) {
             for (int x = room.getX() + 1; x <= room.getX() + room.getW(); x++) {
-                map.tiles[x][y] = Tileset.FLOOR;
+                map.setTiles(x, y, Tileset.FLOOR);
             }
         }
     }
@@ -46,7 +46,7 @@ public class MapBuilderUtils {
             for (int x = room.getX(); x <= room.getX() + room.getW(); x++) {
                 double distance = center.distance(new Position(x, y));
                 if (distance <= radius) {
-                    map.tiles[x][y] = Tileset.FLOOR;
+                    map.setTiles(x, y, Tileset.FLOOR);
                 }
             }
         }
@@ -62,8 +62,8 @@ public class MapBuilderUtils {
      */
     public static void applyHorizontalTunnel(WorldMap map, int startX, int endX, int y) {
         for (int x = Math.min(startX, endX); x <= Math.max(startX, endX); x++) {
-            if (x < map.width && x > 0) {
-                map.tiles[x][y] = Tileset.FLOOR;
+            if (x < map.getWidth() && x > 0) {
+                map.setTiles(x, y, Tileset.FLOOR);
             }
         }
     }
@@ -78,8 +78,8 @@ public class MapBuilderUtils {
      */
     public static void applyVerticalTunnel(WorldMap map, int startY, int endY, int x) {
         for (int y = Math.min(startY, endY); y <= Math.max(startY, endY); y++) {
-            if (y < map.height && y > 0) {
-                map.tiles[x][y] = Tileset.FLOOR;
+            if (y < map.getHeight() && y > 0) {
+                map.setTiles(x, y, Tileset.FLOOR);
             }
         }
     }

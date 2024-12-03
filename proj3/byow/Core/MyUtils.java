@@ -208,8 +208,4 @@ public class MyUtils {
     public static WorldMap load(){
         return readObject(saveFile, WorldMap.class);
     }
-
-    public static void main(String[] args) {
-        System.out.println(CWD);
-    }
 }
