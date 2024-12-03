@@ -2,11 +2,13 @@ package byow.Core;
 
 import byow.Core.Map.BSPMapBuilder;
 import byow.Core.Map.IMapBuilder;
+import byow.Core.Map.WorldMap;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 
 import java.util.Random;
 
+import static byow.Core.MyUtils.*;
 
 public class Engine {
     TERenderer ter = new TERenderer();
@@ -16,17 +18,53 @@ public class Engine {
     private static long seed;
     private static Random random;
     private IMapBuilder mapBuilder;
+    static boolean gameStarted = false;
+    private Avatar avatar;
+    private final UserInterface userInterface = new UserInterface();
 
     /**
      * Method used for exploring a fresh world. This method should handle all inputs,
      * including inputs from the main menu.
      */
     public void interactWithKeyboard() {
+        ter.initialize(WIDTH, HEIGHT);
+        random = new Random();
+        userInterface.drawMenu();
+
+        while (true) {
+            StringBuilder input = new StringBuilder();
+            if (!gameStarted) {
+                getStart(input);
+            } else {
+                inputCommand(input);
+            }
+            TETile[][] tiles = interactWithInputString(input.toString());
+            if (tiles == null) {
+                return;
+            }
+            ter.renderFrame(tiles);
+            userInterface.drawHUD(tiles);
+
+             // check if the avatar reach the locked door
+            if (avatar.isGameOver()) {
+                userInterface.drawGameOver();
+                return;
+            }
+
+            // update HUD even without keyboard input
+//            while (!StdDraw.hasNextKeyTyped()) {
+//                userInterface.drawHUD(tiles);
+//                // pause for a while to less use cpu
+//                StdDraw.pause(100);
+//            }
+        }
     }
+
+
 
     /**
      * Method used for autograding and testing your code. The input string will be a series
-     * of characters (for example, "n123sswwdasdassadwas", "n123sss:q", "lwww". The engine should
+     * of characters (for example, "n123sswwdasdassadwas", "n123sss:q", "lwww"). The engine should
      * behave exactly as if the user typed these characters into the engine using
      * interactWithKeyboard.
      *
@@ -55,36 +93,40 @@ public class Engine {
         // that works for many different input types.
 
 
-        // get the input seed
-        StringBuilder buffer = new StringBuilder();
-        int index = 0;
-        for (char c : input.toCharArray()) {
-            if (c == 'N' || c == 'n') {
-                index++;
-                continue;
+        // handle the bad input
+        input = fixInput(input);
+
+        if (!gameStarted) {
+            if (input.contains("L")) {
+                // load
+                random = new Random();
+                mapBuilder = new BSPMapBuilder(random);
+                WorldMap loadedMap = load();
+                if (loadedMap != null) {
+                    mapBuilder.setWorldMap(loadedMap);
+                    avatar = new Avatar(mapBuilder.getWorldMap());
+                    input = input.substring(1);
+                } else {
+                    throw new RuntimeException("Failed to load the game.");
+                }
+            } else {
+                // Create the world randomly based on the seed
+                int end = input.indexOf("S");
+                seed = Long.parseLong(input.substring(1, end));
+                random = new Random(seed);
+                mapBuilder = new BSPMapBuilder(random);
+                mapBuilder.buildMap();
+                input = input.substring(end);
+                avatar = new Avatar(mapBuilder.getWorldMap());
             }
-            if (c == 'S' || c == 's') {
-                index++;
-                break;
-            }
-            buffer.append(c);
-            index++;
+            gameStarted = true;
         }
-        seed = Long.parseLong(buffer.toString());
-        random = new Random(seed);
-
-        // Create the world randomly based on the seed
-        mapBuilder = new BSPMapBuilder(random);
-        mapBuilder.buildMap();
-
-
-        // get the move step
-        String move = input.substring(index);
 
         // move the avatar
+        for (char step : input.toCharArray()) {
+            avatar.move(step);
+        }
 
-//        ter.initialize(mapBuilder.getWorldMap().width, mapBuilder.getWorldMap().height);
-//        ter.renderFrame(mapBuilder.getWorldMap().tiles);
         return mapBuilder.getWorldMap().tiles;
     }
 
@@ -93,7 +135,7 @@ public class Engine {
         ter.initialize(WIDTH, HEIGHT);
 
         Engine engine = new Engine();
-        TETile[][] world = engine.interactWithInputString("n5197880843569031643s");
+        TETile[][] world = engine.interactWithInputString("Lw");
 
         ter.renderFrame(world);
     }

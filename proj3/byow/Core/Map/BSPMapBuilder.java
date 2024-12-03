@@ -10,10 +10,10 @@ import java.util.List;
 import java.util.Random;
 
 public class BSPMapBuilder implements IMapBuilder {
-    private static final int WIDTH = 80;
-    private static final int HEIGHT = 50;
+    private static final int WIDTH = 60;
+    private static final int HEIGHT = 45;
 
-    private final WorldMap worldMap;
+    private WorldMap worldMap;
     private final Random random;
 
     private final List<Rectangle> rooms = new ArrayList<>();
@@ -112,15 +112,11 @@ public class BSPMapBuilder implements IMapBuilder {
         addSubRects(rects.get(0));
 
         int nRooms = 0;
-        while (nRooms < 240) {
+        while (nRooms < 1000) {
             Rectangle rect = getRandomRectangle();
             Rectangle candidate = getRandomSubRectangle(rect);
             if (isPossible(candidate)) {
-                if (random.nextBoolean()) {
-                    MapBuilderUtils.applyRectangleRoomToWorld(worldMap, candidate);
-                } else {
-                    MapBuilderUtils.applyCircleRoomToWorld(worldMap, candidate);
-                }
+                MapBuilderUtils.applyRectangleRoomToWorld(worldMap, candidate);
                 rooms.add(candidate);
                 addSubRects(rect);
             }
@@ -157,7 +153,7 @@ public class BSPMapBuilder implements IMapBuilder {
             } else if (x > endX) {
                 x -= 1;
             }
-            if (y < endY) {
+            else if (y < endY) {
                 y += 1;
             } else if (y > endY) {
                 y -= 1;
@@ -168,7 +164,7 @@ public class BSPMapBuilder implements IMapBuilder {
 
     /**
      * builds the entire map by resetting the world map, building rooms,
-     * and placing special tiles (TREE) at the starting and ending points.
+     * and placing special tiles (AVATAR and LOCKED_DOOR) at the starting and ending points.
      */
     @Override
     public void buildMap() {
@@ -176,10 +172,11 @@ public class BSPMapBuilder implements IMapBuilder {
         buildRooms();
 
         Position start = rooms.get(0).center();
-        worldMap.tiles[start.x][start.y] = Tileset.TREE;
+        worldMap.tiles[start.x][start.y] = Tileset.AVATAR;
+        worldMap.setEntry(new Position(start.x, start.y));
 
         Position stairs = rooms.get(rooms.size() - 1).center();
-        worldMap.tiles[stairs.x][stairs.y] = Tileset.TREE;
+        worldMap.tiles[stairs.x][stairs.y] = Tileset.LOCKED_DOOR;
     }
 
     /**
@@ -189,5 +186,10 @@ public class BSPMapBuilder implements IMapBuilder {
     @Override
     public WorldMap getWorldMap() {
         return worldMap;
+    }
+
+    @Override
+    public void setWorldMap(WorldMap worldMap) {
+        this.worldMap = worldMap;
     }
 }
