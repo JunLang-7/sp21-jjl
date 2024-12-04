@@ -19,7 +19,7 @@ public class Engine {
     private static long seed;
     private static Random random;
     private IMapBuilder mapBuilder;
-    static boolean gameStarted = false;
+    boolean gameStarted = false;
     private Avatar avatar;
     private final UserInterface userInterface = new UserInterface();
 
@@ -95,7 +95,7 @@ public class Engine {
 
 
         // handle the bad input
-        input = fixInput(input);
+        input = fixInput(this, input);
 
         if (!gameStarted) {
             if (input.contains("L")) {

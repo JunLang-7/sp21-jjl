@@ -147,7 +147,7 @@ public class MyUtils {
      * @param  input the input String
      * @return the fixed input String
      */
-    public static String fixInput(String input) {
+    public static String fixInput(Engine engine, String input) {
         // use StringBuffer instead of StringBuilder to fix the bug of output 2 times length of expected String
         StringBuffer sb = new StringBuffer();
         boolean loadFlag = false;
@@ -179,12 +179,12 @@ public class MyUtils {
                         sb.append(in[i]);
                         startFlag = false;
                         moveFlag = true;
-                    } else if (moveFlag || Engine.gameStarted) {
+                    } else if (moveFlag || engine.gameStarted) {
                         sb.append(in[i]);
                     }
                 }
                 case 'w', 'W', 'a', 'A', 'd', 'D' -> {
-                    if (moveFlag || Engine.gameStarted) {
+                    if (moveFlag || engine.gameStarted) {
                         sb.append(in[i]);
                     }
                 }
