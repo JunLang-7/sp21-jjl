@@ -98,4 +98,10 @@ public class TERenderer {
         }
         StdDraw.show();
     }
+
+    /** Sets the font to the correct font for drawing tiles */
+    public void resetFont() {
+        Font font = new Font("Monaco", Font.BOLD, TILE_SIZE - 2);
+        StdDraw.setFont(font);
+    }
 }

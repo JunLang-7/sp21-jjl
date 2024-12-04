@@ -80,14 +80,21 @@ public class MyUtils {
             if (StdDraw.hasNextKeyTyped()) {
                 char c = StdDraw.nextKeyTyped();
                 if (!started) {
-                    if (c == 'n' || c == 'N') {
-                        started = true;
-                        input.append(c);
-                    } else if (c == 'l' || c == 'L') {
-                        input.append(c);
-                        return;
-                    } else if (c == 'q' || c == 'Q') {
-                        System.exit(0);
+                    switch (c) {
+                        case 'n':
+                        case 'N':
+                            started = true;
+                            input.append(c);
+                            break;
+                        case 'l':
+                        case 'L':
+                            input.append(c);
+                            return;
+                        case 'q':
+                        case 'Q':
+                            System.exit(0);
+                        default:
+                            break;
                     }
                 } else {
                     if (Character.isDigit(c)) {
@@ -182,7 +189,7 @@ public class MyUtils {
                     }
                 }
                 case ':' -> {
-                    if (Engine.gameStarted && in[i + 1] == 'q' || in[i + 1] == 'Q') {
+                    if (in[i + 1] == 'q' || in[i + 1] == 'Q') {
                         sb.append(':');
                         sb.append('Q');
                         return sb.toString().toUpperCase();

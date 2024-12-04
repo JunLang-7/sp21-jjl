@@ -5,6 +5,7 @@ import byow.Core.Map.IMapBuilder;
 import byow.Core.Map.WorldMap;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
+import edu.princeton.cs.introcs.StdDraw;
 
 import java.util.Random;
 
@@ -42,6 +43,7 @@ public class Engine {
             if (tiles == null) {
                 return;
             }
+            ter.resetFont();
             ter.renderFrame(tiles);
             userInterface.drawHUD(tiles);
 
@@ -52,11 +54,11 @@ public class Engine {
             }
 
             // update HUD even without keyboard input
-//            while (!StdDraw.hasNextKeyTyped()) {
-//                userInterface.drawHUD(tiles);
-//                // pause for a while to less use cpu
-//                StdDraw.pause(100);
-//            }
+            while (!StdDraw.hasNextKeyTyped()) {
+                userInterface.drawHUD(tiles);
+                // pause for a while to less use cpu
+                StdDraw.pause(100);
+            }
         }
     }
 
@@ -115,7 +117,7 @@ public class Engine {
                 random = new Random(seed);
                 mapBuilder = new BSPMapBuilder(random);
                 mapBuilder.buildMap();
-                input = input.substring(end);
+                input = input.substring(end + 1);
                 avatar = new Avatar(mapBuilder.getWorldMap());
             }
             gameStarted = true;
@@ -124,6 +126,9 @@ public class Engine {
         // move the avatar
         for (char step : input.toCharArray()) {
             avatar.move(step);
+            if (step == 'Q' || step == 'q') {
+                break;
+            }
         }
 
         return mapBuilder.getWorldMap().getTiles();
@@ -134,8 +139,9 @@ public class Engine {
         ter.initialize(WIDTH, HEIGHT);
 
         Engine engine = new Engine();
-        TETile[][] world = engine.interactWithInputString("n6547766204324870169ssdswa");
+        TETile[][] world = engine.interactWithInputString("l");
 
+        ter.resetFont();
         ter.renderFrame(world);
     }
 }

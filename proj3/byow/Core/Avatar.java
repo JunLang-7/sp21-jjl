@@ -32,7 +32,7 @@ public class Avatar implements Serializable {
             case 'q', 'Q': if (quit) {
                 worldMap.setEntry(new Position(x, y));
                 save(worldMap);
-                System.exit(0);
+                break;
             }
             default: break;
         }
